@@ -1,7 +1,8 @@
 #include "scene.h"
 
-#include <algorithm>
+#include "ray.h"
 #include "vec2.h"
+#include <algorithm>
 
 void Scene::addSphere(const Sphere& sphere)
 {
@@ -26,10 +27,7 @@ void Scene::castRay(const Ray& ray, Colour& colour) const
 		Phit = ray.m_origin;
 		Phit.scaleAdd(ray.m_direction, t);
 		hit.getSurfaceData(Phit, Nhit, tex);
-		double scale = 4.0;
-		double pattern = (fmod(tex.m_x * scale, 1) > 0.5) ^ (fmod(tex.m_y * scale, 1) > 0.5);
-		double c = std::max(0.0, -Vec3::dot(Nhit, ray.m_direction)) * pattern;
-		colour = Colour(c, c, c);
+		shade(ray, Phit, Nhit, tex, colour);
 	}
 	else
 	{
@@ -44,7 +42,7 @@ bool Scene::trace(const Ray& ray, double& t, Sphere& hit) const
 	for (auto sphere : m_spheres)
 	{
 		double t2 = std::numeric_limits<double>::max();
-		if (sphere.intersect(ray, t2) && t2 < t)
+		if (sphere.intersect(ray, t2) && t2 < t && t2 > 0.01)
 		{
 			t = t2;
 			hit = sphere;
@@ -52,4 +50,31 @@ bool Scene::trace(const Ray& ray, double& t, Sphere& hit) const
 	}
 
 	return (t < std::numeric_limits<double>::max());
+}
+
+void Scene::shade(const Ray& ray, const Vec3& position, const Vec3& normal, const Vec2& tex, Colour& colour) const
+{
+	double scale = 16.0;
+	double pattern = (fmod(tex.m_x * scale, 1) > 0.5) ^ (fmod(tex.m_y * scale, 1) > 0.5);
+
+	colour = Colour(0.0, 0.0, 0.0);
+
+	for (auto light : m_lights)
+	{
+		Vec3 L = light.m_position - position;
+		double d = L.lengthSq();
+		L.normalise();
+		Ray shadowRay(position, L);
+		double t;
+		Sphere hit;
+		if (trace(shadowRay, t, hit))
+		{
+			if ((t * t) < d)
+			{
+				continue;
+			}
+		}
+		colour.scaleAdd(light.m_colour, std::max(0.0, Vec3::dot(normal, L)));
+	}
+	colour.scale(pattern * 0.5 + 0.5);
 }

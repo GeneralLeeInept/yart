@@ -7,6 +7,7 @@ public:
 	static Vec3 UnitY;
 	static Vec3 UnitZ;
 	static Vec3 Zero;
+	static Vec3 One;
 
 	Vec3();
 	Vec3(double x, double y, double z);

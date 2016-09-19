@@ -27,7 +27,7 @@ void RenderTarget::setPixel(unsigned x, unsigned y, const Colour& colour)
 {
 	RGBQUAD rgb;
 	colour.toBytes(rgb.rgbRed, rgb.rgbGreen, rgb.rgbBlue);
-	FreeImage_SetPixelColor(m_bitmap, x, y, &rgb);
+	FreeImage_SetPixelColor(m_bitmap, x, getHeight() - 1 - y, &rgb);
 }
 
 void RenderTarget::save(const char* filename)

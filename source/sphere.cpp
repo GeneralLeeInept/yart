@@ -20,7 +20,7 @@ bool Sphere::intersect(const Ray& ray, double& t) const
 {
 	double t0, t1; // solutions for t if the ray intersects
 	Vec3 L = ray.m_origin - m_centre;
-	double a = ray.m_direction.lengthSq();
+	double a = Vec3::dot(ray.m_direction, ray.m_direction);
 	double b = 2 * Vec3::dot(ray.m_direction, L);
 	double c = L.lengthSq() - (m_radius * m_radius);
 	if (!solveQuadratic(a, b, c, t0, t1))

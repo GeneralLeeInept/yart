@@ -37,8 +37,13 @@ int main(int argc, char* argv)
 		RenderTarget target(600, 600);
 		Camera camera;
 		Scene scene;
-		scene.addLight(Light(Vec3(10.0, 10.0, 0.0), Colour(1.0, 1.0, 1.0)));
-		scene.addSphere(Sphere(Vec3(0.0, 0.0, 4.0), 2.0));
+		scene.addLight(Light(Vec3(4.0, -4.0, 4.0), Colour(0.8, 0.0, 0.0)));
+		scene.addLight(Light(Vec3(-4.0, -4.0, 4.0), Colour(0.0, 0.8, 0.0)));
+		scene.addLight(Light(Vec3(0.0, 4.0, 4.0), Colour(0.0, 0.0, 0.8)));
+		scene.addSphere(Sphere(Vec3(4.0, 0.0, 8.0), 2.0));
+		scene.addSphere(Sphere(Vec3(-4.0, 0.0, 8.0), 2.0));
+		scene.addSphere(Sphere(Vec3(0.0, 0.0, 511.0), 500.0));
+		camera.m_position = Vec3(0.0, 0.0, 0.0);
 		render(camera, scene, target);
 		target.save("test.png");
 	}
