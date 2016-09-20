@@ -1,6 +1,7 @@
 #include "camera.h"
 #include "colour.h"
 #include "light.h"
+#include "mesh.h"
 #include "ray.h"
 #include "rendertarget.h"
 #include "scene.h"
@@ -32,6 +33,9 @@ void render(const Camera& camera, const Scene& scene, RenderTarget& target)
 int main(int argc, char* argv)
 {
 	FreeImage_Initialise();
+
+	Mesh mesh;
+	mesh.loadObj("teapot/teapot.obj");
 
 	{
 		RenderTarget target(600, 600);
