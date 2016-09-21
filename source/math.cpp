@@ -1,19 +1,19 @@
 #include "math.h"
 
-bool solveQuadratic(double a, double b, double c, double& x0, double& x1)
+bool solveQuadratic(float a, float b, float c, float& x0, float& x1)
 {
-	double discr = b * b - 4.0 * a * c;
-	if (discr < 0.0)
+	float discr = b * b - 4.0f * a * c;
+	if (discr < 0.0f)
 	{
 		return false;
 	}
-	else if (discr == 0.0)
+	else if (discr == 0.0f)
 	{
-		x0 = x1 = -0.5 * b / a;
+		x0 = x1 = -0.5f * b / a;
 	}
 	else
 	{
-		double q = (b > 0) ? -0.5 * (b + sqrt(discr)) : -0.5 * (b - sqrt(discr));
+		float q = (b > 0.0f) ? -0.5f * (b + sqrtf(discr)) : -0.5f * (b - sqrtf(discr));
 		x0 = q / a;
 		x1 = c / q;
 	}

@@ -26,7 +26,9 @@ unsigned RenderTarget::getHeight() const
 void RenderTarget::setPixel(unsigned x, unsigned y, const Colour& colour)
 {
 	RGBQUAD rgb;
-	colour.toBytes(rgb.rgbRed, rgb.rgbGreen, rgb.rgbBlue);
+	rgb.rgbRed = colour.r;
+	rgb.rgbGreen = colour.g;
+	rgb.rgbBlue = colour.b;
 	FreeImage_SetPixelColor(m_bitmap, x, getHeight() - 1 - y, &rgb);
 }
 

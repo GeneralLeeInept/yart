@@ -43,7 +43,7 @@ bool Mesh::loadObj(const char* filename)
 
 			for (int i = 0; i < 3; ++i)
 			{
-				v.m_v[i] = atof(tokens[i + 1].c_str());
+				v.xyz[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 
 			vertices.push_back(v);
@@ -54,7 +54,7 @@ bool Mesh::loadObj(const char* filename)
 
 			for (int i = 0; i < 3; ++i)
 			{
-				v.m_v[i] = atof(tokens[i + 1].c_str());
+				v.xyz[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 
 			normals.push_back(v);
@@ -65,7 +65,7 @@ bool Mesh::loadObj(const char* filename)
 
 			for (int i = 0; i < 2; ++i)
 			{
-				v.m_v[i] = atof(tokens[i + 1].c_str());
+				v.xy[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 
 			textureCoordinates.push_back(v);
@@ -98,12 +98,12 @@ bool Mesh::loadObj(const char* filename)
 
 #define EPSILON 0.000001
 
-bool triangle_intersection(const Vec3& V1, const Vec3& V2, const Vec3& V3, const Ray& ray, double& t, double& u,
-                           double& v)
+bool triangle_intersection(const Vec3& V1, const Vec3& V2, const Vec3& V3, const Ray& ray, float& t, float& u,
+                           float& v)
 {
 	Vec3 e1, e2; // Edge1, Edge2
 	Vec3 P, Q, T;
-	double det, inv_det;
+	float det, inv_det;
 
 	// Find vectors for two edges sharing V1
 	e1 = V2 - V1;
@@ -143,9 +143,9 @@ bool triangle_intersection(const Vec3& V1, const Vec3& V2, const Vec3& V3, const
 	return (t > EPSILON);
 }
 
-bool Mesh::intersect(const Ray& ray, double& t) const
+bool Mesh::intersect(const Ray& ray, float& t) const
 {
-	t = std::numeric_limits<double>::max();
+	t = std::numeric_limits<float>::max();
 
 	for (auto& micromesh : m_microMeshes)
 	{
@@ -155,7 +155,7 @@ bool Mesh::intersect(const Ray& ray, double& t) const
 			const Vertex& v1 = m_vertices[micromesh.m_indices[tri * 3 + 0]];
 			const Vertex& v2 = m_vertices[micromesh.m_indices[tri * 3 + 1]];
 			const Vertex& v3 = m_vertices[micromesh.m_indices[tri * 3 + 2]];
-			double tHit, u, v;
+			float tHit, u, v;
 			if (triangle_intersection(v1.m_position, v2.m_position, v3.m_position, ray, tHit, u, v) && tHit < t)
 			{
 				t = tHit;
@@ -163,7 +163,7 @@ bool Mesh::intersect(const Ray& ray, double& t) const
 		}
 	}
 
-	return t < std::numeric_limits<double>::max();
+	return t < std::numeric_limits<float>::max();
 }
 
 void Mesh::getSurfaceData(const Vec3& Phit, Vec3& Nhit, Vec2& tex) const

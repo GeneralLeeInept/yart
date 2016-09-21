@@ -18,7 +18,7 @@ public:
 	void addLight(const Light& light);
 
 	void castRay(const Ray& ray, Colour& colour) const;
-	bool trace(const Ray& ray, double& t, IRenderable*& hit) const;
+	bool trace(const Ray& ray, float& t, IRenderable*& hit) const;
 	void shade(const Ray& ray, const Vec3& position, const Vec3& normal, const Vec2& tex, Colour& colour) const;
 
 private:

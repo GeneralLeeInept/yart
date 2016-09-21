@@ -5,8 +5,8 @@ Vec2::Vec2()
 {
 }
 
-Vec2::Vec2(double x, double y)
-  : m_x(x)
-  , m_y(y)
+Vec2::Vec2(float x, float y)
+  : x(x)
+  , y(y)
 {
 }

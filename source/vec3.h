@@ -10,25 +10,25 @@ public:
 	static Vec3 One;
 
 	Vec3();
-	Vec3(double x, double y, double z);
+	Vec3(float x, float y, float z);
 
-	double lengthSq() const;
-	double length() const;
+	float lengthSq() const;
+	float length() const;
 
 	void normalise();
-	void scale(double s);
-	void scaleAdd(const Vec3& r, double s);
+	void scale(float s);
+	void scaleAdd(const Vec3& r, float s);
 
-	static double dot(const Vec3& a, const Vec3& b);
+	static float dot(const Vec3& a, const Vec3& b);
 	static Vec3 cross(const Vec3& a, const Vec3& b);
 
 	union {
-		double m_v[3];
+		float xyz[3];
 		struct
 		{
-			double m_x;
-			double m_y;
-			double m_z;
+			float m_x;
+			float m_y;
+			float m_z;
 		};
 	};
 };

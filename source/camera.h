@@ -7,7 +7,7 @@
 class Camera
 {
 public:
-	Ray createRay(double u, double v) const;
+	Ray createRay(float u, float v) const;
 
 	Matrix33 m_orientation;
 	Vec3 m_position;

@@ -3,4 +3,4 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-bool solveQuadratic(double a, double b, double c, double& x0, double& x1);
+bool solveQuadratic(float a, float b, float c, float& x0, float& x1);

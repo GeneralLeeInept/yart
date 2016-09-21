@@ -15,7 +15,7 @@ class Mesh : public IRenderable
 public:
 	bool loadObj(const char* filename);
 
-	bool intersect(const Ray& ray, double& t) const;
+	bool intersect(const Ray& ray, float& t) const;
 	void getSurfaceData(const Vec3& Phit, Vec3& Nhit, Vec2& tex) const;
 
 private:
@@ -23,15 +23,15 @@ private:
 	{
 		std::string name;
 		std::string map_d;
-		double d; /*! opacity value        */
+		float d; /*! opacity value        */
 		std::string map_Ka;
-		Colour Ka; /*! ambient color        */
+		Vec3 Ka; /*! ambient color        */
 		std::string map_Kd;
-		Colour Kd; /*! diffuse color        */
+		Vec3 Kd; /*! diffuse color        */
 		std::string map_Ks;
-		Colour Ks; /*! specular color       */
+		Vec3 Ks; /*! specular color       */
 		std::string map_Ns;
-		double Ns; /*! specular coefficient */
+		float Ns; /*! specular coefficient */
 		std::string map_Bump; /*! bump map */
 
 		Material(const std::string& name = "")

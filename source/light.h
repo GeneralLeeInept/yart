@@ -6,8 +6,8 @@
 class Light
 {
 public:
-	Light(const Vec3& position, const Colour& colour);
+	Light(const Vec3& position, const Vec3& colour);
 
 	Vec3 m_position;
-	Colour m_colour;
+	Vec3 m_colour;
 };

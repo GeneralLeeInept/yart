@@ -3,6 +3,7 @@
 #include "ray.h"
 #include "renderable.h"
 #include "vec2.h"
+#include "vec3.h"
 #include <algorithm>
 
 void Scene::addObject(IRenderable* object)
@@ -17,7 +18,7 @@ void Scene::addLight(const Light& light)
 
 void Scene::castRay(const Ray& ray, Colour& colour) const
 {
-	double t;
+	float t;
 	IRenderable* hit;
 
 	if (trace(ray, t, hit))
@@ -28,22 +29,22 @@ void Scene::castRay(const Ray& ray, Colour& colour) const
 		Phit = ray.m_origin;
 		Phit.scaleAdd(ray.m_direction, t);
 		hit->getSurfaceData(Phit, Nhit, tex);
-		//shade(ray, Phit, Nhit, tex, colour);
-		colour = Colour(1.0, 1.0, 1.0);
+		shade(ray, Phit, Nhit, tex, colour);
+		//colour = Colour(255, 255, 255);
 	}
 	else
 	{
-		colour = Colour(0.0, 0.0, 0.0);
+		colour = Colour();
 	}
 }
 
-bool Scene::trace(const Ray& ray, double& t, IRenderable*& hit) const
+bool Scene::trace(const Ray& ray, float& t, IRenderable*& hit) const
 {
-	t = std::numeric_limits<double>::max();
+	t = std::numeric_limits<float>::max();
 	hit = nullptr;
 	for (auto& object : m_objects)
 	{
-		double t2 = std::numeric_limits<double>::max();
+		float t2 = std::numeric_limits<float>::max();
 		if (object->intersect(ray, t2) && t2 < t && t2 > 0.001)
 		{
 			t = t2;
@@ -56,18 +57,17 @@ bool Scene::trace(const Ray& ray, double& t, IRenderable*& hit) const
 
 void Scene::shade(const Ray& ray, const Vec3& position, const Vec3& normal, const Vec2& tex, Colour& colour) const
 {
-	double scale = 16.0;
-	double pattern = (fmod(tex.m_x * scale, 1) > 0.5) ^ (fmod(tex.m_y * scale, 1) > 0.5);
-
-	colour = Colour(0.0, 0.0, 0.0);
+	float scale = 16.0f;
+	int pattern = (fmodf(tex.x * scale, 1.0f) > 0.5f) ^ (fmodf(tex.y * scale, 1.0f) > 0.5f);
+	Vec3 colourf;
 
 	for (auto light : m_lights)
 	{
 		Vec3 L = light.m_position - position;
-		double d = L.lengthSq();
+		float d = L.lengthSq();
 		L.normalise();
 		Ray shadowRay(position, L);
-		double t;
+		float t;
 		IRenderable* hit;
 		if (trace(shadowRay, t, hit))
 		{
@@ -76,7 +76,8 @@ void Scene::shade(const Ray& ray, const Vec3& position, const Vec3& normal, cons
 				continue;
 			}
 		}
-		colour.scaleAdd(light.m_colour, std::max(0.0, Vec3::dot(normal, L)));
+		colourf.scaleAdd(light.m_colour, std::max(0.0f, Vec3::dot(normal, L)));
 	}
-	colour.scale(pattern * 0.5 + 0.5);
+	colourf.scale(pattern * 0.5f + 0.5f);
+	colour = Colour(colourf);
 }

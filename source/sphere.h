@@ -10,12 +10,12 @@ class Sphere : public IRenderable
 {
 public:
 	Sphere();
-	Sphere(const Vec3& centre, double radius);
+	Sphere(const Vec3& centre, float radius);
 
-	bool intersect(const Ray& ray, double& t) const;
+	bool intersect(const Ray& ray, float& t) const;
 	void getSurfaceData(const Vec3& Phit, Vec3& Nhit, Vec2& tex) const;
 
 private:
 	Vec3 m_centre;
-	double m_radius;
+	float m_radius;
 };

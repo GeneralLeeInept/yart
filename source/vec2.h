@@ -8,14 +8,14 @@ public:
 	static Vec2 Zero;
 
 	Vec2();
-	Vec2(double x, double y);
+	Vec2(float x, float y);
 
 	union {
-		double m_v[2];
+		float xy[2];
 		struct
 		{
-			double m_x;
-			double m_y;
+			float x;
+			float y;
 		};
 	};
 };

@@ -11,25 +11,25 @@
 
 void render(const Camera& camera, const Scene& scene, RenderTarget& target)
 {
-	double uscale = 1.0 / static_cast<double>(target.getWidth() - 1);
-	double vscale = 1.0 / static_cast<double>(target.getHeight() - 1);
+	float uscale = 1.0f / static_cast<float>(target.getWidth() - 1);
+	float vscale = 1.0f / static_cast<float>(target.getHeight() - 1);
 
 	std::cout.precision(0);
 
 	std::cout << "Rendering.. 0%" << std::flush;
 
-	double progress = 0.0;
-	double progressPerLine = 100.0 / target.getHeight();
+	float progress = 0.0f;
+	float progressPerLine = 100.0f / target.getHeight();
 
 	for (unsigned y = 0; y < target.getHeight(); ++y)
 	{
-		double fy = static_cast<double>(y) + 0.5;
+		float fy = static_cast<float>(y) + 0.5f;
 
 		for (unsigned x = 0; x < target.getWidth(); ++x)
 		{
-			double fx = static_cast<double>(x) + 0.5;
-			double u = 2.0 * (fx * uscale) - 1.0;
-			double v = 1.0 - 2.0 * (fy * vscale);
+			float fx = static_cast<float>(x) + 0.5f;
+			float u = 2.0f * (fx * uscale) - 1.0f;
+			float v = 1.0f - 2.0f * (fy * vscale);
 			Ray ray = camera.createRay(u, v);
 			Colour c;
 			scene.castRay(ray, c);
@@ -51,17 +51,17 @@ int main(int argc, char* argv)
 		RenderTarget target(600, 600);
 		Camera camera;
 		Scene scene;
-		scene.addLight(Light(Vec3(4.0, -4.0, -1.0), Colour(1.0, 0.0, 0.0)));
-		scene.addLight(Light(Vec3(-4.0, -4.0, -1.0), Colour(0.0, 1.0, 0.0)));
-		scene.addLight(Light(Vec3(0.0, 4.0, -1.0), Colour(0.0, 0.0, 1.0)));
-		// scene.addObject(new Sphere(Vec3(4.0, 0.0, 8.0), 2.0));
-		// scene.addObject(new Sphere(Vec3(-4.0, 0.0, 8.0), 2.0));
-		// scene.addObject(new Sphere(Vec3(0.0, 0.0, 511.0), 500.0));
+		scene.addLight(Light(Vec3(4.0f, -4.0f, -1.0f), Vec3(1.0f, 0.0f, 0.0f)));
+		scene.addLight(Light(Vec3(-4.0f, -4.0f, -1.0f), Vec3(0.0, 1.0f, 0.0f)));
+		scene.addLight(Light(Vec3(0.0f, 4.0f, -1.0f), Vec3(0.0f, 0.0f, 1.0f)));
+		scene.addObject(new Sphere(Vec3(4.0, 0.0, 8.0), 2.0));
+		scene.addObject(new Sphere(Vec3(-4.0, 0.0, 8.0), 2.0));
+		scene.addObject(new Sphere(Vec3(0.0, 0.0, 511.0), 500.0));
 		// scene.addObject(new Sphere(Vec3(0.0, 0.0, 0.0), 1.0));
-		Mesh* teapot = new Mesh();
-		teapot->loadObj("test.obj");
-		scene.addObject(teapot);
-		camera.m_position = Vec3(0.0, 0.5, -5.0);
+		//Mesh* teapot = new Mesh();
+		//teapot->loadObj("teapot/teapot.obj");
+		//scene.addObject(teapot);
+		camera.m_position = Vec3(0.0f, 0.0f, 0.0f);
 		render(camera, scene, target);
 		target.save("test.png");
 	}

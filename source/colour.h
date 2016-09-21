@@ -1,13 +1,24 @@
 #pragma once
 
 #include <cinttypes>
-#include "vec3.h"
 
-class Colour : public Vec3
+class Vec3;
+
+class Colour
 {
 public:
 	Colour();
-	Colour(double r, double g, double b);
+	Colour(const Vec3& v);
+	Colour(uint8_t r, uint8_t g, uint8_t b);
 
-	void toBytes(uint8_t& r, uint8_t& g, uint8_t& b) const;
+	union
+	{
+		uint8_t rgb[3];
+		struct
+		{
+			uint8_t r;
+			uint8_t g;
+			uint8_t b;
+		};
+	};
 };

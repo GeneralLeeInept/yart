@@ -1,18 +1,23 @@
 #include "colour.h"
 
+#include "vec3.h"
+
 Colour::Colour()
-  : Colour(0.0, 0.0, 0.0)
+  : r(0)
+  , g(0)
+  , b(0)
 {
 }
 
-Colour::Colour(double r, double g, double b)
-  : Vec3(r, g, b)
+Colour::Colour(const Vec3& v)
 {
+	for (int i = 0; i < 3; ++i)
+		rgb[i] = static_cast<uint8_t>((v.xyz[i] > 1.0f ? 1.0f : v.xyz[i]) * 255.0f);
 }
 
-void Colour::toBytes(uint8_t& r, uint8_t& g, uint8_t& b) const
+Colour::Colour(uint8_t r, uint8_t g, uint8_t b)
+  : r(r)
+  , g(g)
+  , b(b)
 {
-	r = static_cast<uint8_t>(((m_x < 0.0) ? 0.0 : ((m_x > 1.0) ? 1.0 : m_x)) * 255.0);
-	g = static_cast<uint8_t>(((m_y < 0.0) ? 0.0 : ((m_y > 1.0) ? 1.0 : m_y)) * 255.0);
-	b = static_cast<uint8_t>(((m_z < 0.0) ? 0.0 : ((m_z > 1.0) ? 1.0 : m_z)) * 255.0);
 }
