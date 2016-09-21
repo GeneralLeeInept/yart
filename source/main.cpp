@@ -54,10 +54,10 @@ int main(int argc, char* argv)
 		scene.addLight(Light(Vec3(4.0, -4.0, -1.0), Colour(1.0, 0.0, 0.0)));
 		scene.addLight(Light(Vec3(-4.0, -4.0, -1.0), Colour(0.0, 1.0, 0.0)));
 		scene.addLight(Light(Vec3(0.0, 4.0, -1.0), Colour(0.0, 0.0, 1.0)));
-		//scene.addObject(new Sphere(Vec3(4.0, 0.0, 8.0), 2.0));
-		//scene.addObject(new Sphere(Vec3(-4.0, 0.0, 8.0), 2.0));
-		//scene.addObject(new Sphere(Vec3(0.0, 0.0, 511.0), 500.0));
-		//scene.addObject(new Sphere(Vec3(0.0, 0.0, 0.0), 1.0));
+		// scene.addObject(new Sphere(Vec3(4.0, 0.0, 8.0), 2.0));
+		// scene.addObject(new Sphere(Vec3(-4.0, 0.0, 8.0), 2.0));
+		// scene.addObject(new Sphere(Vec3(0.0, 0.0, 511.0), 500.0));
+		// scene.addObject(new Sphere(Vec3(0.0, 0.0, 0.0), 1.0));
 		Mesh* teapot = new Mesh();
 		teapot->loadObj("test.obj");
 		scene.addObject(teapot);

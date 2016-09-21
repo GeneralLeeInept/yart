@@ -60,7 +60,7 @@ double Vec3::dot(const Vec3& a, const Vec3& b)
 	return dp;
 }
 
-Vec3 Vec3::cross(const Vec3 & a, const Vec3 & b)
+Vec3 Vec3::cross(const Vec3& a, const Vec3& b)
 {
 	double x = a.m_y * b.m_z - a.m_z * b.m_y;
 	double y = a.m_z * b.m_x - a.m_x * b.m_z;
