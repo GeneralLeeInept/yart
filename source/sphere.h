@@ -1,11 +1,12 @@
 #pragma once
 
+#include "renderable.h"
 #include "vec3.h"
 
 class Ray;
 class Vec2;
 
-class Sphere
+class Sphere : public IRenderable
 {
 public:
 	Sphere();

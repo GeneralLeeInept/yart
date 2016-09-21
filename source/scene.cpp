@@ -1,12 +1,13 @@
 #include "scene.h"
 
 #include "ray.h"
+#include "renderable.h"
 #include "vec2.h"
 #include <algorithm>
 
-void Scene::addSphere(const Sphere& sphere)
+void Scene::addObject(IRenderable* object)
 {
-	m_spheres.push_back(sphere);
+	m_objects.push_back(std::unique_ptr<IRenderable>(object));
 }
 
 void Scene::addLight(const Light& light)
@@ -17,7 +18,7 @@ void Scene::addLight(const Light& light)
 void Scene::castRay(const Ray& ray, Colour& colour) const
 {
 	double t;
-	Sphere hit;
+	IRenderable* hit;
 
 	if (trace(ray, t, hit))
 	{
@@ -26,8 +27,9 @@ void Scene::castRay(const Ray& ray, Colour& colour) const
 		Vec2 tex;
 		Phit = ray.m_origin;
 		Phit.scaleAdd(ray.m_direction, t);
-		hit.getSurfaceData(Phit, Nhit, tex);
-		shade(ray, Phit, Nhit, tex, colour);
+		hit->getSurfaceData(Phit, Nhit, tex);
+		//shade(ray, Phit, Nhit, tex, colour);
+		colour = Colour(1.0, 1.0, 1.0);
 	}
 	else
 	{
@@ -35,21 +37,21 @@ void Scene::castRay(const Ray& ray, Colour& colour) const
 	}
 }
 
-bool Scene::trace(const Ray& ray, double& t, Sphere& hit) const
+bool Scene::trace(const Ray& ray, double& t, IRenderable*& hit) const
 {
 	t = std::numeric_limits<double>::max();
-
-	for (auto sphere : m_spheres)
+	hit = nullptr;
+	for (auto& object : m_objects)
 	{
 		double t2 = std::numeric_limits<double>::max();
-		if (sphere.intersect(ray, t2) && t2 < t && t2 > 0.01)
+		if (object->intersect(ray, t2) && t2 < t && t2 > 0.001)
 		{
 			t = t2;
-			hit = sphere;
+			hit = object.get();
 		}
 	}
 
-	return (t < std::numeric_limits<double>::max());
+	return (hit != nullptr);
 }
 
 void Scene::shade(const Ray& ray, const Vec3& position, const Vec3& normal, const Vec2& tex, Colour& colour) const
@@ -66,7 +68,7 @@ void Scene::shade(const Ray& ray, const Vec3& position, const Vec3& normal, cons
 		L.normalise();
 		Ray shadowRay(position, L);
 		double t;
-		Sphere hit;
+		IRenderable* hit;
 		if (trace(shadowRay, t, hit))
 		{
 			if ((t * t) < d)

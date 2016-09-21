@@ -20,6 +20,7 @@ public:
 	void scaleAdd(const Vec3& r, double s);
 
 	static double dot(const Vec3& a, const Vec3& b);
+	static Vec3 cross(const Vec3& a, const Vec3& b);
 
 	union {
 		double m_v[3];

@@ -6,13 +6,17 @@
 #include <vector>
 
 #include "colour.h"
+#include "renderable.h"
 #include "vec2.h"
 #include "vec3.h"
 
-class Mesh
+class Mesh : public IRenderable
 {
 public:
 	bool loadObj(const char* filename);
+
+	bool intersect(const Ray& ray, double& t) const;
+	void getSurfaceData(const Vec3& Phit, Vec3& Nhit, Vec2& tex) const;
 
 private:
 	struct Material

@@ -1,8 +1,10 @@
+#include "mesh.h"
+
 #include <fstream>
 #include <regex>
 #include <sstream>
 
-#include "mesh.h"
+#include "ray.h"
 
 void tokenize(const std::string& line, const char* control, std::vector<std::string>& tokens)
 {
@@ -92,6 +94,80 @@ bool Mesh::loadObj(const char* filename)
 	}
 
 	return true;
+}
+
+#define EPSILON 0.000001
+
+bool triangle_intersection(const Vec3& V1, const Vec3& V2, const Vec3& V3, const Ray& ray, double& t, double& u,
+                           double& v)
+{
+	Vec3 e1, e2; // Edge1, Edge2
+	Vec3 P, Q, T;
+	double det, inv_det;
+
+	// Find vectors for two edges sharing V1
+	e1 = V2 - V1;
+	e2 = V3 - V1;
+
+	// Begin calculating determinant - also used to calculate u parameter
+	P = Vec3::cross(ray.m_direction, e2);
+
+	// if determinant is near zero, ray lies in plane of triangle or ray is parallel to plane of triangle
+	det = Vec3::dot(e1, P);
+	// NOT CULLING
+	if (det > -EPSILON && det < EPSILON)
+		return 0;
+
+	inv_det = 1.f / det;
+
+	// calculate distance from V1 to ray origin
+	T = ray.m_origin - V1;
+
+	// Calculate u parameter and test bound
+	u = Vec3::dot(T, P) * inv_det;
+	// The intersection lies outside of the triangle
+	if (u < 0.f || u > 1.f)
+		return 0;
+
+	// Prepare to test v parameter
+	Q = Vec3::cross(T, e1);
+
+	// Calculate V parameter and test bound
+	v = Vec3::dot(ray.m_direction, Q) * inv_det;
+	// The intersection lies outside of the triangle
+	if (v < 0.f || u + v > 1.f)
+		return 0;
+
+	t = Vec3::dot(e2, Q) * inv_det;
+
+	return (t > EPSILON);
+}
+
+bool Mesh::intersect(const Ray& ray, double& t) const
+{
+	t = std::numeric_limits<double>::max();
+
+	for (auto& micromesh : m_microMeshes)
+	{
+		int numTris = micromesh.m_indices.size() / 3;
+		for (int tri = 0; tri < numTris; ++tri)
+		{
+			const Vertex& v1 = m_vertices[micromesh.m_indices[tri * 3 + 0]];
+			const Vertex& v2 = m_vertices[micromesh.m_indices[tri * 3 + 1]];
+			const Vertex& v3 = m_vertices[micromesh.m_indices[tri * 3 + 2]];
+			double tHit, u, v;
+			if (triangle_intersection(v1.m_position, v2.m_position, v3.m_position, ray, tHit, u, v) && tHit < t)
+			{
+				t = tHit;
+			}
+		}
+	}
+
+	return t < std::numeric_limits<double>::max();
+}
+
+void Mesh::getSurfaceData(const Vec3& Phit, Vec3& Nhit, Vec2& tex) const
+{
 }
 
 int fixIndex(int fileIndex, size_t last)
