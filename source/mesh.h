@@ -8,7 +8,7 @@
 #include "colour.h"
 #include "renderable.h"
 #include "vec2.h"
-#include "vec3.h"
+#include "vec3f.h"
 
 class Mesh : public IRenderable
 {
@@ -16,7 +16,7 @@ public:
 	bool loadObj(const char* filename);
 
 	bool intersect(const Ray& ray, float& t) const;
-	void getSurfaceData(const Vec3& Phit, Vec3& Nhit, Vec2& tex) const;
+	void getSurfaceData(const Vec3f& Phit, Vec3f& Nhit, Vec2& tex) const;
 
 private:
 	struct Material
@@ -25,11 +25,11 @@ private:
 		std::string map_d;
 		float d; /*! opacity value        */
 		std::string map_Ka;
-		Vec3 Ka; /*! ambient color        */
+		Vec3f Ka; /*! ambient color        */
 		std::string map_Kd;
-		Vec3 Kd; /*! diffuse color        */
+		Vec3f Kd; /*! diffuse color        */
 		std::string map_Ks;
-		Vec3 Ks; /*! specular color       */
+		Vec3f Ks; /*! specular color       */
 		std::string map_Ns;
 		float Ns; /*! specular coefficient */
 		std::string map_Bump; /*! bump map */
@@ -49,8 +49,8 @@ private:
 
 	struct Vertex
 	{
-		Vec3 m_position;
-		Vec3 m_normal;
+		Vec3f m_position;
+		Vec3f m_normal;
 		Vec2 m_textureCoordinate;
 	};
 
@@ -64,7 +64,7 @@ private:
 		IndexArray m_indices;
 	};
 
-	Index addVertex(const std::string& decl, const std::vector<Vec3>& vertices, const std::vector<Vec3>& normals,
+	Index addVertex(const std::string& decl, const std::vector<Vec3f>& vertices, const std::vector<Vec3f>& normals,
 	                const std::vector<Vec2>& textureCoords);
 
 	std::map<std::string, MaterialPtr> m_materials;

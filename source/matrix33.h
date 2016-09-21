@@ -1,20 +1,20 @@
 #pragma once
 
-#include "vec3.h"
+#include "vec3f.h"
 
 class Matrix33
 {
 public:
 	Matrix33();
-	Matrix33(const Vec3& x, const Vec3& y, const Vec3& z);
+	Matrix33(const Vec3f& x, const Vec3f& y, const Vec3f& z);
 
 	union {
-		Vec3 m_m[3];
+		Vec3f m_m[3];
 		struct
 		{
-			Vec3 m_x;
-			Vec3 m_y;
-			Vec3 m_z;
+			Vec3f m_x;
+			Vec3f m_y;
+			Vec3f m_z;
 		};
 	};
 };

@@ -2,13 +2,13 @@
 
 #include <cinttypes>
 
-class Vec3;
+class Vec3f;
 
 class Colour
 {
 public:
 	Colour();
-	Colour(const Vec3& v);
+	Colour(const Vec3f& v);
 	Colour(uint8_t r, uint8_t g, uint8_t b);
 
 	union

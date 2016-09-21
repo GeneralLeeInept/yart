@@ -1,12 +1,12 @@
 #pragma once
 
-#include "vec3.h"
+#include "vec3f.h"
 
 class Ray
 {
 public:
-	Ray(const Vec3& origin, const Vec3& direction);
+	Ray(const Vec3f& origin, const Vec3f& direction);
 
-	Vec3 m_origin;
-	Vec3 m_direction;
+	Vec3f m_origin;
+	Vec3f m_direction;
 };

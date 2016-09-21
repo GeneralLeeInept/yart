@@ -1,13 +1,13 @@
 #pragma once
 
 #include "colour.h"
-#include "vec3.h"
+#include "vec3f.h"
 
 class Light
 {
 public:
-	Light(const Vec3& position, const Vec3& colour);
+	Light(const Vec3f& position, const Vec3f& colour);
 
-	Vec3 m_position;
-	Vec3 m_colour;
+	Vec3f m_position;
+	Vec3f m_colour;
 };

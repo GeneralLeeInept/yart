@@ -51,17 +51,17 @@ int main(int argc, char* argv)
 		RenderTarget target(600, 600);
 		Camera camera;
 		Scene scene;
-		scene.addLight(Light(Vec3(4.0f, -4.0f, -1.0f), Vec3(1.0f, 0.0f, 0.0f)));
-		scene.addLight(Light(Vec3(-4.0f, -4.0f, -1.0f), Vec3(0.0, 1.0f, 0.0f)));
-		scene.addLight(Light(Vec3(0.0f, 4.0f, -1.0f), Vec3(0.0f, 0.0f, 1.0f)));
-		scene.addObject(new Sphere(Vec3(4.0, 0.0, 8.0), 2.0));
-		scene.addObject(new Sphere(Vec3(-4.0, 0.0, 8.0), 2.0));
-		scene.addObject(new Sphere(Vec3(0.0, 0.0, 511.0), 500.0));
-		// scene.addObject(new Sphere(Vec3(0.0, 0.0, 0.0), 1.0));
+		scene.addLight(Light(Vec3f(4.0f, -4.0f, -1.0f), Vec3f(1.0f, 0.0f, 0.0f)));
+		scene.addLight(Light(Vec3f(-4.0f, -4.0f, -1.0f), Vec3f(0.0, 1.0f, 0.0f)));
+		scene.addLight(Light(Vec3f(0.0f, 4.0f, -1.0f), Vec3f(0.0f, 0.0f, 1.0f)));
+		scene.addObject(new Sphere(Vec3f(4.0, 0.0, 8.0), 2.0));
+		scene.addObject(new Sphere(Vec3f(-4.0, 0.0, 8.0), 2.0));
+		scene.addObject(new Sphere(Vec3f(0.0, 0.0, 511.0), 500.0));
+		// scene.addObject(new Sphere(Vec3f(0.0, 0.0, 0.0), 1.0));
 		//Mesh* teapot = new Mesh();
 		//teapot->loadObj("teapot/teapot.obj");
 		//scene.addObject(teapot);
-		camera.m_position = Vec3(0.0f, 0.0f, 0.0f);
+		camera.m_position = Vec3f(0.0f, 0.0f, 0.0f);
 		render(camera, scene, target);
 		target.save("test.png");
 	}

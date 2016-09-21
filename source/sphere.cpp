@@ -6,11 +6,11 @@
 #include <algorithm>
 
 Sphere::Sphere()
-  : Sphere(Vec3::Zero, 1.0)
+  : Sphere(Vec3f::Zero, 1.0)
 {
 }
 
-Sphere::Sphere(const Vec3& centre, float radius)
+Sphere::Sphere(const Vec3f& centre, float radius)
   : m_centre(centre)
   , m_radius(radius)
 {
@@ -19,9 +19,9 @@ Sphere::Sphere(const Vec3& centre, float radius)
 bool Sphere::intersect(const Ray& ray, float& t) const
 {
 	float t0, t1; // solutions for t if the ray intersects
-	Vec3 L = ray.m_origin - m_centre;
-	float a = Vec3::dot(ray.m_direction, ray.m_direction);
-	float b = 2 * Vec3::dot(ray.m_direction, L);
+	Vec3f L = ray.m_origin - m_centre;
+	float a = Vec3f::dot(ray.m_direction, ray.m_direction);
+	float b = 2 * Vec3f::dot(ray.m_direction, L);
 	float c = L.lengthSq() - (m_radius * m_radius);
 	if (!solveQuadratic(a, b, c, t0, t1))
 		return false;
@@ -41,7 +41,7 @@ bool Sphere::intersect(const Ray& ray, float& t) const
 	return true;
 }
 
-void Sphere::getSurfaceData(const Vec3& Phit, Vec3& Nhit, Vec2& tex) const
+void Sphere::getSurfaceData(const Vec3f& Phit, Vec3f& Nhit, Vec2& tex) const
 {
 	Nhit = Phit - m_centre;
 	Nhit.normalise();

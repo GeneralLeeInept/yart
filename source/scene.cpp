@@ -3,7 +3,7 @@
 #include "ray.h"
 #include "renderable.h"
 #include "vec2.h"
-#include "vec3.h"
+#include "vec3f.h"
 #include <algorithm>
 
 void Scene::addObject(IRenderable* object)
@@ -23,8 +23,8 @@ void Scene::castRay(const Ray& ray, Colour& colour) const
 
 	if (trace(ray, t, hit))
 	{
-		Vec3 Phit;
-		Vec3 Nhit;
+		Vec3f Phit;
+		Vec3f Nhit;
 		Vec2 tex;
 		Phit = ray.m_origin;
 		Phit.scaleAdd(ray.m_direction, t);
@@ -55,15 +55,15 @@ bool Scene::trace(const Ray& ray, float& t, IRenderable*& hit) const
 	return (hit != nullptr);
 }
 
-void Scene::shade(const Ray& ray, const Vec3& position, const Vec3& normal, const Vec2& tex, Colour& colour) const
+void Scene::shade(const Ray& ray, const Vec3f& position, const Vec3f& normal, const Vec2& tex, Colour& colour) const
 {
 	float scale = 16.0f;
 	int pattern = (fmodf(tex.x * scale, 1.0f) > 0.5f) ^ (fmodf(tex.y * scale, 1.0f) > 0.5f);
-	Vec3 colourf;
+	Vec3f colourf;
 
 	for (auto light : m_lights)
 	{
-		Vec3 L = light.m_position - position;
+		Vec3f L = light.m_position - position;
 		float d = L.lengthSq();
 		L.normalise();
 		Ray shadowRay(position, L);
@@ -76,7 +76,7 @@ void Scene::shade(const Ray& ray, const Vec3& position, const Vec3& normal, cons
 				continue;
 			}
 		}
-		colourf.scaleAdd(light.m_colour, std::max(0.0f, Vec3::dot(normal, L)));
+		colourf.scaleAdd(light.m_colour, std::max(0.0f, Vec3f::dot(normal, L)));
 	}
 	colourf.scale(pattern * 0.5f + 0.5f);
 	colour = Colour(colourf);

@@ -24,8 +24,8 @@ bool Mesh::loadObj(const char* filename)
 {
 	std::ifstream objFile(filename);
 	std::string line;
-	std::vector<Vec3> vertices;
-	std::vector<Vec3> normals;
+	std::vector<Vec3f> vertices;
+	std::vector<Vec3f> normals;
 	std::vector<Vec2> textureCoordinates;
 	MicroMesh* microMesh = nullptr;
 
@@ -39,7 +39,7 @@ bool Mesh::loadObj(const char* filename)
 
 		if (tokens[0] == "v")
 		{
-			Vec3 v;
+			Vec3f v;
 
 			for (int i = 0; i < 3; ++i)
 			{
@@ -50,7 +50,7 @@ bool Mesh::loadObj(const char* filename)
 		}
 		else if (tokens[0] == "vn")
 		{
-			Vec3 v;
+			Vec3f v;
 
 			for (int i = 0; i < 3; ++i)
 			{
@@ -98,11 +98,11 @@ bool Mesh::loadObj(const char* filename)
 
 #define EPSILON 0.000001
 
-bool triangle_intersection(const Vec3& V1, const Vec3& V2, const Vec3& V3, const Ray& ray, float& t, float& u,
+bool triangle_intersection(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3, const Ray& ray, float& t, float& u,
                            float& v)
 {
-	Vec3 e1, e2; // Edge1, Edge2
-	Vec3 P, Q, T;
+	Vec3f e1, e2; // Edge1, Edge2
+	Vec3f P, Q, T;
 	float det, inv_det;
 
 	// Find vectors for two edges sharing V1
@@ -110,10 +110,10 @@ bool triangle_intersection(const Vec3& V1, const Vec3& V2, const Vec3& V3, const
 	e2 = V3 - V1;
 
 	// Begin calculating determinant - also used to calculate u parameter
-	P = Vec3::cross(ray.m_direction, e2);
+	P = Vec3f::cross(ray.m_direction, e2);
 
 	// if determinant is near zero, ray lies in plane of triangle or ray is parallel to plane of triangle
-	det = Vec3::dot(e1, P);
+	det = Vec3f::dot(e1, P);
 	// NOT CULLING
 	if (det > -EPSILON && det < EPSILON)
 		return 0;
@@ -124,21 +124,21 @@ bool triangle_intersection(const Vec3& V1, const Vec3& V2, const Vec3& V3, const
 	T = ray.m_origin - V1;
 
 	// Calculate u parameter and test bound
-	u = Vec3::dot(T, P) * inv_det;
+	u = Vec3f::dot(T, P) * inv_det;
 	// The intersection lies outside of the triangle
 	if (u < 0.f || u > 1.f)
 		return 0;
 
 	// Prepare to test v parameter
-	Q = Vec3::cross(T, e1);
+	Q = Vec3f::cross(T, e1);
 
 	// Calculate V parameter and test bound
-	v = Vec3::dot(ray.m_direction, Q) * inv_det;
+	v = Vec3f::dot(ray.m_direction, Q) * inv_det;
 	// The intersection lies outside of the triangle
 	if (v < 0.f || u + v > 1.f)
 		return 0;
 
-	t = Vec3::dot(e2, Q) * inv_det;
+	t = Vec3f::dot(e2, Q) * inv_det;
 
 	return (t > EPSILON);
 }
@@ -166,7 +166,7 @@ bool Mesh::intersect(const Ray& ray, float& t) const
 	return t < std::numeric_limits<float>::max();
 }
 
-void Mesh::getSurfaceData(const Vec3& Phit, Vec3& Nhit, Vec2& tex) const
+void Mesh::getSurfaceData(const Vec3f& Phit, Vec3f& Nhit, Vec2& tex) const
 {
 }
 
@@ -179,8 +179,8 @@ int fixIndex(int fileIndex, size_t last)
 	return fileIndex - 1;
 }
 
-Mesh::Index Mesh::addVertex(const std::string& decl, const std::vector<Vec3>& vertices,
-                            const std::vector<Vec3>& normals, const std::vector<Vec2>& textureCoords)
+Mesh::Index Mesh::addVertex(const std::string& decl, const std::vector<Vec3f>& vertices,
+                            const std::vector<Vec3f>& normals, const std::vector<Vec2>& textureCoords)
 {
 	int indices[3] = {0};
 	std::regex re("(\\d+)(/(\\d+)?)?(/(\\d+)?)?");
