@@ -2,7 +2,7 @@
 
 #include "ray.h"
 #include "renderable.h"
-#include "vec2.h"
+#include "vec2f.h"
 #include "vec3f.h"
 #include <algorithm>
 
@@ -19,18 +19,16 @@ void Scene::addLight(const Light& light)
 void Scene::castRay(const Ray& ray, Colour& colour) const
 {
 	float t;
-	IRenderable* hit;
+	HitData hitData;
 
-	if (trace(ray, t, hit))
+	if (trace(ray, t, hitData))
 	{
-		Vec3f Phit;
-		Vec3f Nhit;
-		Vec2 tex;
-		Phit = ray.m_origin;
-		Phit.scaleAdd(ray.m_direction, t);
-		hit->getSurfaceData(Phit, Nhit, tex);
-		shade(ray, Phit, Nhit, tex, colour);
-		//colour = Colour(255, 255, 255);
+		hitData.m_hitPosition = ray.m_origin;
+		hitData.m_hitPosition.scaleAdd(ray.m_direction, t);
+		hitData.m_hitObject->getSurfaceData(hitData);
+		Vec3f result;
+		shade(ray, hitData, result);
+		colour = Colour(result);
 	}
 	else
 	{
@@ -38,46 +36,52 @@ void Scene::castRay(const Ray& ray, Colour& colour) const
 	}
 }
 
-bool Scene::trace(const Ray& ray, float& t, IRenderable*& hit) const
+bool Scene::trace(const Ray& ray, float& t) const
+{
+	HitData unused;
+	return trace(ray, t, unused);
+}
+
+bool Scene::trace(const Ray& ray, float& t, HitData& hitData) const
 {
 	t = std::numeric_limits<float>::max();
-	hit = nullptr;
+	hitData.m_hitObject = nullptr;
 	for (auto& object : m_objects)
 	{
 		float t2 = std::numeric_limits<float>::max();
 		if (object->intersect(ray, t2) && t2 < t && t2 > 0.001)
 		{
 			t = t2;
-			hit = object.get();
+			hitData.m_hitObject = object.get();
 		}
 	}
 
-	return (hit != nullptr);
+	return (hitData.m_hitObject != nullptr);
 }
 
-void Scene::shade(const Ray& ray, const Vec3f& position, const Vec3f& normal, const Vec2& tex, Colour& colour) const
+void Scene::shade(const Ray& ray, const HitData& hitData, Vec3f& result) const
 {
 	float scale = 16.0f;
-	int pattern = (fmodf(tex.x * scale, 1.0f) > 0.5f) ^ (fmodf(tex.y * scale, 1.0f) > 0.5f);
-	Vec3f colourf;
+	int pattern =
+	  (fmodf(hitData.m_hitUV.x * scale, 1.0f) > 0.5f) ^ (fmodf(hitData.m_hitUV.y * scale, 1.0f) > 0.5f);
+	
+	result = Vec3f::Zero;
 
 	for (auto light : m_lights)
 	{
-		Vec3f L = light.m_position - position;
+		Vec3f L = light.m_position - hitData.m_hitPosition;
 		float d = L.lengthSq();
 		L.normalise();
-		Ray shadowRay(position, L);
+		Ray shadowRay(hitData.m_hitPosition, L);
 		float t;
-		IRenderable* hit;
-		if (trace(shadowRay, t, hit))
+		if (trace(shadowRay, t))
 		{
 			if ((t * t) < d)
 			{
 				continue;
 			}
 		}
-		colourf.scaleAdd(light.m_colour, std::max(0.0f, Vec3f::dot(normal, L)));
+		result.scaleAdd(light.m_colour, std::max(0.0f, Vec3f::dot(hitData.m_hitNormal, L)));
 	}
-	colourf.scale(pattern * 0.5f + 0.5f);
-	colour = Colour(colourf);
+	result.scale(pattern * 0.5f + 0.5f);
 }

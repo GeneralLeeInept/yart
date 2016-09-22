@@ -26,7 +26,7 @@ bool Mesh::loadObj(const char* filename)
 	std::string line;
 	std::vector<Vec3f> vertices;
 	std::vector<Vec3f> normals;
-	std::vector<Vec2> textureCoordinates;
+	std::vector<Vec2f> textureCoordinates;
 	MicroMesh* microMesh = nullptr;
 
 	while (std::getline(objFile, line))
@@ -61,7 +61,7 @@ bool Mesh::loadObj(const char* filename)
 		}
 		else if (tokens[0] == "vt")
 		{
-			Vec2 v;
+			Vec2f v;
 
 			for (int i = 0; i < 2; ++i)
 			{
@@ -166,7 +166,7 @@ bool Mesh::intersect(const Ray& ray, float& t) const
 	return t < std::numeric_limits<float>::max();
 }
 
-void Mesh::getSurfaceData(const Vec3f& Phit, Vec3f& Nhit, Vec2& tex) const
+void Mesh::getSurfaceData(HitData& hitData) const
 {
 }
 
@@ -180,7 +180,7 @@ int fixIndex(int fileIndex, size_t last)
 }
 
 Mesh::Index Mesh::addVertex(const std::string& decl, const std::vector<Vec3f>& vertices,
-                            const std::vector<Vec3f>& normals, const std::vector<Vec2>& textureCoords)
+                            const std::vector<Vec3f>& normals, const std::vector<Vec2f>& textureCoords)
 {
 	int indices[3] = {0};
 	std::regex re("(\\d+)(/(\\d+)?)?(/(\\d+)?)?");

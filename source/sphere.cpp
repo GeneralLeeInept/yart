@@ -2,7 +2,7 @@
 
 #include "math.h"
 #include "ray.h"
-#include "vec2.h"
+#include "vec2f.h"
 #include <algorithm>
 
 Sphere::Sphere()
@@ -41,11 +41,11 @@ bool Sphere::intersect(const Ray& ray, float& t) const
 	return true;
 }
 
-void Sphere::getSurfaceData(const Vec3f& Phit, Vec3f& Nhit, Vec2& tex) const
+void Sphere::getSurfaceData(HitData& hitData) const
 {
-	Nhit = Phit - m_centre;
-	Nhit.normalise();
+	hitData.m_hitNormal = hitData.m_hitPosition - m_centre;
+	hitData.m_hitNormal.normalise();
 	float pi = static_cast<float>(M_PI);
-	tex.x = (1.0f + atan2f(Nhit.m_z, Nhit.m_x) / pi) * 0.5f;
-	tex.y = acosf(Nhit.m_y) / pi;
+	hitData.m_hitUV.x = (1.0f + atan2f(hitData.m_hitNormal.m_z, hitData.m_hitNormal.m_x) / pi) * 0.5f;
+	hitData.m_hitUV.y = acosf(hitData.m_hitNormal.m_y) / pi;
 }
