@@ -7,7 +7,7 @@
 
 #include "colour.h"
 #include "renderable.h"
-#include "vec2.h"
+#include "vec2f.h"
 #include "vec3f.h"
 
 class Mesh : public IRenderable
@@ -16,7 +16,7 @@ public:
 	bool loadObj(const char* filename);
 
 	bool intersect(const Ray& ray, float& t) const;
-	void getSurfaceData(const Vec3f& Phit, Vec3f& Nhit, Vec2& tex) const;
+	void getSurfaceData(HitData& hitData) const;
 
 private:
 	struct Material
@@ -51,7 +51,7 @@ private:
 	{
 		Vec3f m_position;
 		Vec3f m_normal;
-		Vec2 m_textureCoordinate;
+		Vec2f m_textureCoordinate;
 	};
 
 	typedef std::vector<Vertex> VertexArray;
@@ -65,7 +65,7 @@ private:
 	};
 
 	Index addVertex(const std::string& decl, const std::vector<Vec3f>& vertices, const std::vector<Vec3f>& normals,
-	                const std::vector<Vec2>& textureCoords);
+	                const std::vector<Vec2f>& textureCoords);
 
 	std::map<std::string, MaterialPtr> m_materials;
 	VertexArray m_vertices;

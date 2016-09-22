@@ -4,7 +4,7 @@
 #include "vec3f.h"
 
 class Ray;
-class Vec2;
+class Vec2f;
 
 class Sphere : public IRenderable
 {
@@ -13,7 +13,7 @@ public:
 	Sphere(const Vec3f& centre, float radius);
 
 	bool intersect(const Ray& ray, float& t) const;
-	void getSurfaceData(const Vec3f& Phit, Vec3f& Nhit, Vec2& tex) const;
+	void getSurfaceData(HitData& hitData) const;
 
 private:
 	Vec3f m_centre;

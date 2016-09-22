@@ -5,11 +5,12 @@
 
 #include "light.h"
 #include "sphere.h"
+#include "vec2f.h"
+#include "vec3f.h"
 
 class Ray;
 class IRenderable;
-class Vec2;
-class Vec3f;
+struct HitData;
 
 class Scene
 {
@@ -18,8 +19,11 @@ public:
 	void addLight(const Light& light);
 
 	void castRay(const Ray& ray, Colour& colour) const;
-	bool trace(const Ray& ray, float& t, IRenderable*& hit) const;
-	void shade(const Ray& ray, const Vec3f& position, const Vec3f& normal, const Vec2& tex, Colour& colour) const;
+
+private:
+	bool trace(const Ray& ray, float& t) const;
+	bool trace(const Ray& ray, float& t, HitData& hitData) const;
+	void shade(const Ray& ray, const HitData& hitData, Vec3f& result) const;
 
 private:
 	std::vector<std::unique_ptr<IRenderable>> m_objects;
