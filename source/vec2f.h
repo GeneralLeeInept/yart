@@ -11,7 +11,7 @@ public:
 	Vec2f(float x, float y);
 
 	union {
-		float xy[2];
+		float v[2];
 		struct
 		{
 			float x;

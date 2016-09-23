@@ -20,3 +20,15 @@ bool solveQuadratic(float a, float b, float c, float& x0, float& x1)
 
 	return true;
 }
+
+int compareFloats(float a, float b, float epsilon)
+{
+	float d = a - b;
+
+	if (fabsf(d) < epsilon)
+	{
+		return 0;
+	}
+
+	return (d > epsilon) ? 1 : -1;
+}

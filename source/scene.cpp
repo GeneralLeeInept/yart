@@ -26,8 +26,8 @@ void Scene::castRay(const Ray& ray, Colour& colour) const
 		hitData.m_hitPosition = ray.m_origin;
 		hitData.m_hitPosition.scaleAdd(ray.m_direction, t);
 		hitData.m_hitObject->getSurfaceData(hitData);
-		Vec3f result;
-		shade(ray, hitData, result);
+		Vec3f result(1.0f);
+		//shade(ray, hitData, result);
 		colour = Colour(result);
 	}
 	else

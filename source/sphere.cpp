@@ -46,6 +46,6 @@ void Sphere::getSurfaceData(HitData& hitData) const
 	hitData.m_hitNormal = hitData.m_hitPosition - m_centre;
 	hitData.m_hitNormal.normalise();
 	float pi = static_cast<float>(M_PI);
-	hitData.m_hitUV.x = (1.0f + atan2f(hitData.m_hitNormal.m_z, hitData.m_hitNormal.m_x) / pi) * 0.5f;
-	hitData.m_hitUV.y = acosf(hitData.m_hitNormal.m_y) / pi;
+	hitData.m_hitUV.x = (1.0f + atan2f(hitData.m_hitNormal.z, hitData.m_hitNormal.x) / pi) * 0.5f;
+	hitData.m_hitUV.y = acosf(hitData.m_hitNormal.y) / pi;
 }

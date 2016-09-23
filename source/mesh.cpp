@@ -6,6 +6,31 @@
 
 #include "ray.h"
 
+struct Mesh::Material
+{
+	std::string name;
+	std::string map_d;
+	float d; /*! opacity value        */
+	std::string map_Ka;
+	Vec3f Ka; /*! ambient color        */
+	std::string map_Kd;
+	Vec3f Kd; /*! diffuse color        */
+	std::string map_Ks;
+	Vec3f Ks; /*! specular color       */
+	std::string map_Ns;
+	float Ns; /*! specular coefficient */
+	std::string map_Bump; /*! bump map */
+
+	Material(const std::string& name = "")
+	  : name(name)
+	{
+		d = 1.0f;
+		Ka.set(0.5f);
+		Kd.set(0.5f);
+		Ns = 0.0f;
+	}
+};
+
 void tokenize(const std::string& line, const char* control, std::vector<std::string>& tokens)
 {
 	size_t pos = line.find_first_not_of(control, 0);
@@ -24,10 +49,8 @@ bool Mesh::loadObj(const char* filename)
 {
 	std::ifstream objFile(filename);
 	std::string line;
-	std::vector<Vec3f> vertices;
-	std::vector<Vec3f> normals;
-	std::vector<Vec2f> textureCoordinates;
 	MicroMesh* microMesh = nullptr;
+	IndexMap indexMap;
 
 	while (std::getline(objFile, line))
 	{
@@ -39,36 +62,36 @@ bool Mesh::loadObj(const char* filename)
 
 		if (tokens[0] == "v")
 		{
-			Vec3f v;
+			Vec3f P;
 
-			for (int i = 0; i < 3; ++i)
+			for (size_t i = 0; i < 3; ++i)
 			{
-				v.xyz[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+				P.v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 
-			vertices.push_back(v);
+			m_positions.push_back(P);
 		}
 		else if (tokens[0] == "vn")
 		{
-			Vec3f v;
+			Vec3f N;
 
-			for (int i = 0; i < 3; ++i)
+			for (size_t i = 0; i < 3; ++i)
 			{
-				v.xyz[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+				N.v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 
-			normals.push_back(v);
+			m_normals.push_back(N);
 		}
 		else if (tokens[0] == "vt")
 		{
-			Vec2f v;
+			Vec3f V(0.0f);
 
-			for (int i = 0; i < 2; ++i)
+			for (size_t i = 0; i < 3 && i < tokens.size() - 1; ++i)
 			{
-				v.xy[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+				V.v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 
-			textureCoordinates.push_back(v);
+			m_textureCoordinates.push_back(V);
 		}
 		else if (tokens[0] == "g")
 		{
@@ -81,7 +104,7 @@ bool Mesh::loadObj(const char* filename)
 
 			for (size_t i = 1; i < tokens.size(); ++i)
 			{
-				indices.push_back(addVertex(tokens[i], vertices, normals, textureCoordinates));
+				indices.push_back(addVertex(tokens[i], indexMap));
 			}
 
 			for (size_t i = 2; i < indices.size(); ++i)
@@ -156,7 +179,9 @@ bool Mesh::intersect(const Ray& ray, float& t) const
 			const Vertex& v2 = m_vertices[micromesh.m_indices[tri * 3 + 1]];
 			const Vertex& v3 = m_vertices[micromesh.m_indices[tri * 3 + 2]];
 			float tHit, u, v;
-			if (triangle_intersection(v1.m_position, v2.m_position, v3.m_position, ray, tHit, u, v) && tHit < t)
+			if (triangle_intersection(m_positions[v1.m_position], m_positions[v2.m_position],
+			                          m_positions[v3.m_position], ray, tHit, u, v)
+			    && tHit < t)
 			{
 				t = tHit;
 			}
@@ -179,36 +204,52 @@ int fixIndex(int fileIndex, size_t last)
 	return fileIndex - 1;
 }
 
-Mesh::Index Mesh::addVertex(const std::string& decl, const std::vector<Vec3f>& vertices,
-                            const std::vector<Vec3f>& normals, const std::vector<Vec2f>& textureCoords)
+size_t Mesh::addVertex(const std::string& decl, IndexMap& indexMap)
 {
-	int indices[3] = {0};
 	std::regex re("(\\d+)(/(\\d+)?)?(/(\\d+)?)?");
 	std::smatch matches;
+	Vertex v = { invalid, invalid, invalid };
+
 	if (std::regex_match(decl, matches, re))
 	{
-		for (int i = 0; i < 3; ++i)
+		if (matches[1].matched)
 		{
-			if (matches[i * 2 + 1].matched)
-				indices[i] = atoi(matches[(i * 2) + 1].str().c_str());
+			v.m_position = fixIndex(atoi(matches[1].str().c_str()), m_positions.size());
+		}
+		if (matches[3].matched)
+		{
+			v.m_textureCoordinates = fixIndex(atoi(matches[3].str().c_str()), m_textureCoordinates.size());
+		}
+		if (matches[5].matched)
+		{
+			v.m_normal = fixIndex(atoi(matches[5].str().c_str()), m_normals.size());
 		}
 	}
 
-	Vertex v;
-	if (indices[0])
+	auto it = indexMap.find(v);
+	size_t index;
+
+	if (it == indexMap.end())
 	{
-		v.m_position = vertices[fixIndex(indices[0], vertices.size())];
+		index = m_vertices.size();
+		m_vertices.push_back(v);
+		indexMap[v] = index;
 	}
-	if (indices[2])
+	else
 	{
-		v.m_normal = normals[fixIndex(indices[2], normals.size())];
-	}
-	if (indices[1])
-	{
-		v.m_textureCoordinate = textureCoords[fixIndex(indices[1], textureCoords.size())];
+		index = it->second;
 	}
 
-	m_vertices.push_back(v);
+	return index;
+}
 
-	return m_vertices.size() - 1;
+size_t Mesh::VertexHasher::operator()(const Vertex& v) const
+{
+	return std::hash<size_t>()(v.m_position);
+}
+
+bool Mesh::VertexComparer::operator()(const Vertex& v1, const Vertex& v2) const
+{
+	return (v1.m_position == v2.m_position && v1.m_normal == v2.m_normal
+	        && v1.m_textureCoordinates == v2.m_textureCoordinates);
 }

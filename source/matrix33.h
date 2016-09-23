@@ -9,12 +9,12 @@ public:
 	Matrix33(const Vec3f& x, const Vec3f& y, const Vec3f& z);
 
 	union {
-		Vec3f m_m[3];
+		Vec3f m[3];
 		struct
 		{
-			Vec3f m_x;
-			Vec3f m_y;
-			Vec3f m_z;
+			Vec3f X;
+			Vec3f Y;
+			Vec3f Z;
 		};
 	};
 };

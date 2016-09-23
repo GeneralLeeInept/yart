@@ -9,12 +9,14 @@ public:
 	static Vec3f Zero;
 	static Vec3f One;
 
-	Vec3f();
+	Vec3f(float f = 0.0f);
 	Vec3f(float x, float y, float z);
 
 	float lengthSq() const;
 	float length() const;
 
+	void set(float x, float y, float z);
+	void set(float xyz);
 	void normalise();
 	void scale(float s);
 	void scaleAdd(const Vec3f& r, float s);
@@ -23,12 +25,12 @@ public:
 	static Vec3f cross(const Vec3f& a, const Vec3f& b);
 
 	union {
-		float xyz[3];
+		float v[3];
 		struct
 		{
-			float m_x;
-			float m_y;
-			float m_z;
+			float x;
+			float y;
+			float z;
 		};
 	};
 };
