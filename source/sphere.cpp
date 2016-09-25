@@ -19,9 +19,9 @@ Sphere::Sphere(const Vec3f& centre, float radius)
 bool Sphere::intersect(const Ray& ray, float& t) const
 {
 	float t0, t1; // solutions for t if the ray intersects
-	Vec3f L = ray.m_origin - m_centre;
-	float a = Vec3f::dot(ray.m_direction, ray.m_direction);
-	float b = 2 * Vec3f::dot(ray.m_direction, L);
+	Vec3f L = ray.O - m_centre;
+	float a = Vec3f::dot(ray.D, ray.D);
+	float b = 2 * Vec3f::dot(ray.D, L);
 	float c = L.lengthSq() - (m_radius * m_radius);
 	if (!solveQuadratic(a, b, c, t0, t1))
 		return false;

@@ -1,6 +1,7 @@
 #include "camera.h"
 #include "colour.h"
 #include "geometry.h"
+#include "kdtree.h"
 #include "light.h"
 #include "mesh.h"
 #include "ray.h"
@@ -70,7 +71,9 @@ int main(int argc, char* argv)
 		//scene.addObject(new Sphere(Vec3f(0.0, 0.0, 0.0), 1.0));
 		Mesh* teapot = new Mesh();
 		teapot->loadObj("teapot/teapot.obj");
-		scene.addObject(teapot);
+		KdTree* kdtree = new KdTree();
+		kdtree->build(*teapot);
+		scene.addObject(kdtree);
 		camera.m_position = Vec3f(0.0f, 25.0f, -100.0f);
 		render(camera, scene, target);
 		target.save("test.png");

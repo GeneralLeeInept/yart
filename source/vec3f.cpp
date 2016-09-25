@@ -30,6 +30,16 @@ float Vec3f::length() const
 	return sqrtf(lengthSq());
 }
 
+const float& Vec3f::operator[](int index) const
+{
+	return v[index];
+}
+
+float& Vec3f::operator[](int index)
+{
+	return v[index];
+}
+
 void Vec3f::set(float x, float y, float z)
 {
 	this->x = x;
@@ -67,7 +77,7 @@ float Vec3f::dot(const Vec3f& a, const Vec3f& b)
 	float dp = 0.f;
 	for (int i = 0; i < 3; ++i)
 	{
-		dp += a.v[i] * b.v[i];
+		dp += a[i] * b[i];
 	}
 	return dp;
 }

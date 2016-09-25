@@ -13,12 +13,6 @@
 class Mesh : public IRenderable
 {
 public:
-	bool loadObj(const char* filename);
-
-	bool intersect(const Ray& ray, float& t) const;
-	void getSurfaceData(HitData& hitData) const;
-
-private:
 	typedef std::vector<Vec3f> VectorArray;
 	typedef std::vector<size_t> IndexArray;
 
@@ -31,6 +25,11 @@ private:
 		IndexArray m_indices;
 	};
 
+	bool loadObj(const char* filename);
+
+	bool intersect(const Ray& ray, float& t) const;
+	void getSurfaceData(HitData& hitData) const;
+	
 	struct Vertex
 	{
 		size_t m_position;

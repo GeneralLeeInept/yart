@@ -66,7 +66,7 @@ bool Mesh::loadObj(const char* filename)
 
 			for (size_t i = 0; i < 3; ++i)
 			{
-				P.v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+				P[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 
 			m_positions.push_back(P);
@@ -77,7 +77,7 @@ bool Mesh::loadObj(const char* filename)
 
 			for (size_t i = 0; i < 3; ++i)
 			{
-				N.v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+				N[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 
 			m_normals.push_back(N);
@@ -88,7 +88,7 @@ bool Mesh::loadObj(const char* filename)
 
 			for (size_t i = 0; i < 3 && i < tokens.size() - 1; ++i)
 			{
-				V.v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+				V[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 
 			m_textureCoordinates.push_back(V);
@@ -133,7 +133,7 @@ bool triangle_intersection(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3, co
 	e2 = V3 - V1;
 
 	// Begin calculating determinant - also used to calculate u parameter
-	P = Vec3f::cross(ray.m_direction, e2);
+	P = Vec3f::cross(ray.D, e2);
 
 	// if determinant is near zero, ray lies in plane of triangle or ray is parallel to plane of triangle
 	det = Vec3f::dot(e1, P);
@@ -144,7 +144,7 @@ bool triangle_intersection(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3, co
 	inv_det = 1.f / det;
 
 	// calculate distance from V1 to ray origin
-	T = ray.m_origin - V1;
+	T = ray.O - V1;
 
 	// Calculate u parameter and test bound
 	u = Vec3f::dot(T, P) * inv_det;
@@ -156,7 +156,7 @@ bool triangle_intersection(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3, co
 	Q = Vec3f::cross(T, e1);
 
 	// Calculate V parameter and test bound
-	v = Vec3f::dot(ray.m_direction, Q) * inv_det;
+	v = Vec3f::dot(ray.D, Q) * inv_det;
 	// The intersection lies outside of the triangle
 	if (v < 0.f || u + v > 1.f)
 		return 0;
