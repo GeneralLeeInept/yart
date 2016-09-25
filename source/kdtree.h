@@ -75,5 +75,5 @@ private:
 	Aabb m_aabb;
 
 	void buildRecurse(struct BuildLeaf& leaf, Node& node, int depth);
-	bool intersectRecurse(const Ray& ray, size_t node, Aabb aabb, float tMin, float tMax, float& hitT) const;
+	bool intersectRecurse(const Ray& ray, size_t node, float tMin, float tMax, float& hitT) const;
 };

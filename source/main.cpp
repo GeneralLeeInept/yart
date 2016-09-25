@@ -74,7 +74,7 @@ int main(int argc, char* argv)
 		KdTree* kdtree = new KdTree();
 		kdtree->build(*teapot);
 		scene.addObject(kdtree);
-		camera.m_position = Vec3f(0.0f, 25.0f, -100.0f);
+		camera.m_position = Vec3f(0.0f, 25.0f, -50.0f);
 		render(camera, scene, target);
 		target.save("test.png");
 	}

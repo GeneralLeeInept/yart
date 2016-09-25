@@ -168,7 +168,9 @@ bool KdTree::intersect(const Ray& ray, float& t) const
 {
 	float tMin = std::numeric_limits<float>::epsilon();
 	float tMax = std::numeric_limits<float>::max();
-	return intersectRecurse(ray, 0, m_aabb, tMin, tMax, t);
+	if (geometry::clip(ray, m_aabb, tMin, tMax))
+		return intersectRecurse(ray, 0, tMin, tMax, t);
+	return false;
 }
 
 void KdTree::getSurfaceData(HitData& hitData) const
@@ -177,7 +179,7 @@ void KdTree::getSurfaceData(HitData& hitData) const
 
 bool shouldSplit(BuildLeaf& node, int& splitAxis, float& splitDistance)
 {
-	if (node.triangles.size() < 101)
+	if (node.triangles.size() < 2)
 	{
 		return false;
 	}
@@ -194,7 +196,7 @@ bool shouldSplit(BuildLeaf& node, int& splitAxis, float& splitDistance)
 		}
 	}
 
-	if (maxExtent < 0.05f)
+	if (maxExtent < 0.005f)
 	{
 		return false;
 	}
@@ -208,7 +210,7 @@ void KdTree::buildRecurse(BuildLeaf& leaf, Node& node, int depth)
 {
 	int splitAxis;
 	float splitDistance;
-	if (depth < 16 && shouldSplit(leaf, splitAxis, splitDistance))
+	if (depth < 32 && shouldSplit(leaf, splitAxis, splitDistance))
 	{
 		size_t firstChild = m_nodes.size();
 		node.m_inner.setData(splitAxis, splitDistance, firstChild);
@@ -246,7 +248,7 @@ void KdTree::buildRecurse(BuildLeaf& leaf, Node& node, int depth)
 bool triangle_intersection(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3, const Ray& ray, float& t, float& u,
                            float& v);
 
-bool KdTree::intersectRecurse(const Ray& ray, size_t node, Aabb aabb, float tMin, float tMax, float& hitT) const
+bool KdTree::intersectRecurse(const Ray& ray, size_t node, float tMin, float tMax, float& hitT) const
 {
 	const Node& n = m_nodes.at(node);
 	int axis;
@@ -266,12 +268,12 @@ bool KdTree::intersectRecurse(const Ray& ray, size_t node, Aabb aabb, float tMin
 		if (startSide <= 0 && endSide <= 0)
 		{
 			// Ray segment is on near side of split plane
-			return intersectRecurse(ray, firstChild, aabb, tMin, tMax, hitT);
+			return intersectRecurse(ray, firstChild, tMin, tMax, hitT);
 		}
 		else if (startSide > 0 && endSide > 0)
 		{
 			// Ray segment is on far side of split plane
-			return intersectRecurse(ray, firstChild + 1, aabb, tMin, tMax, hitT);
+			return intersectRecurse(ray, firstChild + 1, tMin, tMax, hitT);
 		}
 		else
 		{
@@ -284,15 +286,15 @@ bool KdTree::intersectRecurse(const Ray& ray, size_t node, Aabb aabb, float tMin
 			{
 				if (startSide <= 0)
 				{
-					if (intersectRecurse(ray, firstChild, aabb, tMin, tClip, hitT))
+					if (intersectRecurse(ray, firstChild, tMin, tClip, hitT))
 						return true;
-					return intersectRecurse(ray, firstChild + 1, aabb, tClip, tMax, hitT);
+					return intersectRecurse(ray, firstChild + 1, tClip, tMax, hitT);
 				}
 				else
 				{
-					if (intersectRecurse(ray, firstChild + 1, aabb, tMin, tClip, hitT))
+					if (intersectRecurse(ray, firstChild + 1, tMin, tClip, hitT))
 						return true;
-					return intersectRecurse(ray, firstChild, aabb, tClip, tMax, hitT);
+					return intersectRecurse(ray, firstChild, tClip, tMax, hitT);
 				}
 			}
 			else
