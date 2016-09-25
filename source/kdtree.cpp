@@ -255,33 +255,51 @@ bool KdTree::intersectRecurse(const Ray& ray, size_t node, Aabb aabb, float tMin
 
 	if (n.m_inner.getData(axis, splitDistance, firstChild))
 	{
-		float firstT = std::numeric_limits<float>::max();
-		Aabb firstAabb(aabb);
-		firstAabb.m_maxs[axis] = splitDistance;	
-		bool first = intersectRecurse(ray, firstChild, aabb, tMin, tMax, firstT);
+		Vec3f rayStart(ray.O);
+		rayStart.scaleAdd(ray.D, tMin);
 
-		float secondT = std::numeric_limits<float>::max();
-		Aabb secondAabb(aabb);
-		secondAabb.m_mins[axis] = splitDistance;
-		bool second = intersectRecurse(ray, firstChild + 1, aabb, tMin, tMax, secondT);
+		Vec3f rayEnd(ray.O);
+		rayEnd.scaleAdd(ray.D, tMax);
 
-		if (first && second)
+		int startSide = compareFloats(rayStart[axis], splitDistance);
+		int endSide = compareFloats(rayEnd[axis], splitDistance);
+		if (startSide <= 0 && endSide <= 0)
 		{
-			hitT = std::min(firstT, secondT);
+			// Ray segment is on near side of split plane
+			return intersectRecurse(ray, firstChild, aabb, tMin, tMax, hitT);
 		}
-		else if (first)
+		else if (startSide > 0 && endSide > 0)
 		{
-			hitT = firstT;
-			return true;
-		}
-		else if (second)
-		{
-			hitT = secondT;
-			return true;
+			// Ray segment is on far side of split plane
+			return intersectRecurse(ray, firstChild + 1, aabb, tMin, tMax, hitT);
 		}
 		else
 		{
-			return false;
+			// Ray segment crosses split plane
+			float tClip;
+			Plane splitPlane;
+			splitPlane.N[axis] = 1.0f;
+			splitPlane.d = splitDistance;
+			if (geometry::intersect(ray, splitPlane, tClip))
+			{
+				if (startSide <= 0)
+				{
+					if (intersectRecurse(ray, firstChild, aabb, tMin, tClip, hitT))
+						return true;
+					return intersectRecurse(ray, firstChild + 1, aabb, tClip, tMax, hitT);
+				}
+				else
+				{
+					if (intersectRecurse(ray, firstChild + 1, aabb, tMin, tClip, hitT))
+						return true;
+					return intersectRecurse(ray, firstChild, aabb, tClip, tMax, hitT);
+				}
+			}
+			else
+			{
+				assert(!"Ray was meant to intersect plane!");
+				return false;
+			}
 		}
 	}
 	else
@@ -297,7 +315,7 @@ bool KdTree::intersectRecurse(const Ray& ray, size_t node, Aabb aabb, float tMin
 				hitT = t;
 			}
 		}
-	}
 
-	return (hitT < std::numeric_limits<float>::max());
+		return (hitT < std::numeric_limits<float>::max());
+	}
 }

@@ -60,3 +60,17 @@ bool geometry::clip(const Ray& ray, const Aabb& aabb, float& tMin, float& tMax)
 
 	return true;
 }
+
+bool geometry::intersect(const Ray & ray, const Plane & p, float & t)
+{
+	float denom = Vec3f::dot(p.N, ray.D);
+	if (compareFloats(denom, 0.0f) != 0)
+	{
+		Vec3f V(ray.O);
+		V.scale(-1.0f);
+		V.scaleAdd(p.N, p.d);
+		t = Vec3f::dot(V, p.N) / denom;
+		return (t >= 0);
+	}
+	return false;
+}
