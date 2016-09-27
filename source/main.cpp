@@ -1,18 +1,15 @@
 #include "camera.h"
 #include "colour.h"
-#include "geometry.h"
-#include "kdtree.h"
-#include "light.h"
 #include "mesh.h"
-#include "ray.h"
 #include "rendertarget.h"
-#include "scene.h"
-#include "sphere.h"
+#include <embree2/rtcore.h>
+#include <embree2/rtcore_ray.h>
 #include <FreeImage.h>
 #include <chrono>
 #include <iostream>
+#include <memory>
 
-void render(const Camera& camera, const Scene& scene, RenderTarget& target)
+void render(const Camera& camera, RTCScene scene, RenderTarget& target)
 {
 	float uscale = 1.0f / static_cast<float>(target.getWidth() - 1);
 	float vscale = 1.0f / static_cast<float>(target.getHeight() - 1);
@@ -36,10 +33,13 @@ void render(const Camera& camera, const Scene& scene, RenderTarget& target)
 			float fx = static_cast<float>(x) + 0.5f;
 			float u = 2.0f * (fx * uscale) - 1.0f;
 			float v = 1.0f - 2.0f * (fy * vscale);
-			Ray ray = camera.createRay(u, v);
-			Colour c;
-			scene.castRay(ray, c);
-			target.setPixel(x, y, c);
+			RTCRay ray;
+			camera.createRay(ray, u, v);
+			rtcIntersect(scene, ray);
+			if (ray.geomID != RTC_INVALID_GEOMETRY_ID)
+				target.setPixel(x, y, Colour(255, 255, 255));
+			else
+				target.setPixel(x, y, Colour(0, 0, 0));
 		}
 
 		progress += progressPerLine;
@@ -54,30 +54,21 @@ void render(const Camera& camera, const Scene& scene, RenderTarget& target)
 
 int main(int argc, char* argv)
 {
-	geometry::tests();
-
 	FreeImage_Initialise();
+	auto deviceDeleter = [&](__RTCDevice* ptr) { rtcDeleteDevice(ptr); };
+	std::unique_ptr<__RTCDevice, decltype(deviceDeleter)> device(rtcNewDevice(), deviceDeleter);
+	auto sceneDeleter = [&](__RTCScene* ptr) { rtcDeleteScene(ptr); };
+	std::unique_ptr<__RTCScene, decltype(sceneDeleter)> scene(
+	  rtcDeviceNewScene(device.get(), RTC_SCENE_STATIC, RTC_INTERSECT1), sceneDeleter);
+	Mesh mesh;
+	mesh.load("dragon/dragon.obj", scene.get());
+	rtcCommit(scene.get());
 
-	{
-		RenderTarget target(600, 600);
-		Camera camera;
-		Scene scene;
-		scene.addLight(Light(Vec3f(4.0f, -4.0f, -1.0f), Vec3f(1.0f, 0.0f, 0.0f)));
-		scene.addLight(Light(Vec3f(-4.0f, -4.0f, -1.0f), Vec3f(0.0, 1.0f, 0.0f)));
-		scene.addLight(Light(Vec3f(0.0f, 4.0f, -1.0f), Vec3f(0.0f, 0.0f, 1.0f)));
-		//scene.addObject(new Sphere(Vec3f(4.0, 0.0, 8.0), 2.0));
-		//scene.addObject(new Sphere(Vec3f(-4.0, 0.0, 8.0), 2.0));
-		//scene.addObject(new Sphere(Vec3f(0.0, 0.0, 511.0), 500.0));
-		//scene.addObject(new Sphere(Vec3f(0.0, 0.0, 0.0), 1.0));
-		Mesh* teapot = new Mesh();
-		teapot->loadObj("teapot/teapot.obj");
-		KdTree* kdtree = new KdTree();
-		kdtree->build(*teapot);
-		scene.addObject(kdtree);
-		camera.m_position = Vec3f(0.0f, 25.0f, -50.0f);
-		render(camera, scene, target);
-		target.save("test.png");
-	}
+	std::unique_ptr<RenderTarget> renderTarget(new RenderTarget(600, 600));
+	Camera camera;
+	camera.m_position = Vec3f(0.0f, 2.0f, -12.0f);
+	render(camera, scene.get(), *(renderTarget.get()));
+	renderTarget->save("test.png");
 
 	FreeImage_DeInitialise();
 

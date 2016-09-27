@@ -14,8 +14,8 @@ public:
 
 	float lengthSq() const;
 	float length() const;
-	const float& operator[](int index) const;
-	float& operator[](int index);
+	const float& operator[](size_t index) const;
+	float& operator[](size_t index);
 
 	void set(float x, float y, float z);
 	void set(float xyz);

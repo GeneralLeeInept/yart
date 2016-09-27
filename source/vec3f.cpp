@@ -30,12 +30,12 @@ float Vec3f::length() const
 	return sqrtf(lengthSq());
 }
 
-const float& Vec3f::operator[](int index) const
+const float& Vec3f::operator[](size_t index) const
 {
 	return v[index];
 }
 
-float& Vec3f::operator[](int index)
+float& Vec3f::operator[](size_t index)
 {
 	return v[index];
 }
