@@ -3,10 +3,10 @@
 #include "math.h"
 #include "mesh.h"
 #include "rendertarget.h"
-#include <embree2/rtcore.h>
-#include <embree2/rtcore_ray.h>
 #include <FreeImage.h>
 #include <chrono>
+#include <embree2/rtcore.h>
+#include <embree2/rtcore_ray.h>
 #include <iostream>
 #include <memory>
 
@@ -25,7 +25,7 @@ void render(const Camera& camera, RTCScene scene, RenderTarget& target)
 	std::chrono::system_clock::time_point start, end;
 	start = std::chrono::system_clock::now();
 
-	Vec3f lightP(1.f, 1.f, 1.f);	// light position
+	Vec3f lightP(1.f, 1.f, 1.f); // light position
 
 	for (unsigned y = 0; y < target.getHeight(); ++y)
 	{
@@ -43,15 +43,18 @@ void render(const Camera& camera, RTCScene scene, RenderTarget& target)
 			{
 				Vec3f N(ray.Ng);
 				N.normalise();
-				Vec3f hitP(ray.org);
-				hitP.scaleAdd(Vec3f(ray.dir), ray.tfar);
-				Vec3f L = lightP - hitP;
-				L.normalise();
-				float nDotL = -Vec3f::dot(N, L);
-				uint8_t l = 0;
-				if (compareFloats(nDotL, 0.0f) > 0)
-					l = static_cast<uint8_t>(nDotL * 255.0f);
-				target.setPixel(x, y, Colour(l, l, l));
+				N = N + Vec3f::One;
+				N.scale(0.5f);
+				target.setPixel(x, y, Colour(N));
+				// Vec3f hitP(ray.org);
+				// hitP.scaleAdd(Vec3f(ray.dir), ray.tfar);
+				// Vec3f L = lightP - hitP;
+				// L.normalise();
+				// float nDotL = -Vec3f::dot(N, L);
+				// uint8_t l = 0;
+				// if (compareFloats(nDotL, 0.0f) > 0)
+				//	l = static_cast<uint8_t>(nDotL * 255.0f);
+				// target.setPixel(x, y, Colour(l, l, l));
 			}
 			else
 				target.setPixel(x, y, Colour(0, 0, 0));
@@ -76,23 +79,23 @@ int main(int argc, char* argv)
 	std::unique_ptr<__RTCScene, decltype(sceneDeleter)> scene(
 	  rtcDeviceNewScene(device.get(), RTC_SCENE_STATIC, RTC_INTERSECT1), sceneDeleter);
 	Mesh mesh;
-//	mesh.loadObj("C:/Development/raytracer/data/crytek-sponza/sponza.obj");
-//	mesh.loadObj("C:/Development/raytracer/data/teapot/teapot.obj");
-	mesh.loadObj("C:/Development/raytracer/data/buddha/buddha.obj");
-//	mesh.loadObj("C:/Development/raytracer/data/dragon/dragon.obj");
-//	mesh.loadPly("C:/Development/raytracer/data/armadillo.ply");
-//	mesh.loadPly("C:/Development/raytracer/data/dragon.ply");
-//	mesh.loadPly("C:/Development/raytracer/data/happy.ply");
-//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/dragon.ply");
-//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/happy.ply");
-//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/bunny.ply");
+	mesh.loadObj("C:/Development/raytracer/data/crytek-sponza/sponza.obj");
+	//	mesh.loadObj("C:/Development/raytracer/data/teapot/teapot.obj");
+	//	mesh.loadObj("C:/Development/raytracer/data/buddha/buddha.obj");
+	//	mesh.loadObj("C:/Development/raytracer/data/dragon/dragon.obj");
+	//	mesh.loadPly("C:/Development/raytracer/data/armadillo.ply");
+	//	mesh.loadPly("C:/Development/raytracer/data/dragon.ply");
+	//	mesh.loadPly("C:/Development/raytracer/data/happy.ply");
+	//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/dragon.ply");
+	//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/happy.ply");
+	//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/bunny.ply");
 	mesh.addToScene(scene.get());
 	rtcCommit(scene.get());
 
 	std::unique_ptr<RenderTarget> renderTarget(new RenderTarget(600, 600));
 	Camera camera;
 	camera.m_orientation.rotateY(static_cast<float>(-M_PI_2));
-	camera.m_position = Vec3f(1.f, 0.0f, 0.0f);
+	camera.m_position = Vec3f(0.f, 600.0f, 0.0f);
 	render(camera, scene.get(), *(renderTarget.get()));
 	renderTarget->save("test.png");
 
