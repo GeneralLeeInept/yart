@@ -8,15 +8,20 @@ Vec3f Vec3f::UnitZ(0.0, 0.0, 1.0);
 Vec3f Vec3f::Zero(0.0, 0.0, 0.0);
 Vec3f Vec3f::One(1.0, 1.0, 1.0);
 
-Vec3f::Vec3f()
-  : Vec3f(Zero)
+Vec3f::Vec3f(float f)
+  : Vec3f(f, f, f)
 {
 }
 
 Vec3f::Vec3f(float x, float y, float z)
-  : m_x(x)
-  , m_y(y)
-  , m_z(z)
+  : x(x)
+  , y(y)
+  , z(z)
+{
+}
+
+Vec3f::Vec3f(float * v)
+	: x(v[0]), y(v[1]), z(v[2])
 {
 }
 
@@ -30,6 +35,28 @@ float Vec3f::length() const
 	return sqrtf(lengthSq());
 }
 
+const float& Vec3f::operator[](size_t index) const
+{
+	return v[index];
+}
+
+float& Vec3f::operator[](size_t index)
+{
+	return v[index];
+}
+
+void Vec3f::set(float x, float y, float z)
+{
+	this->x = x;
+	this->y = y;
+	this->z = z;
+}
+
+void Vec3f::set(float xyz)
+{
+	set(xyz, xyz, xyz);
+}
+
 void Vec3f::normalise()
 {
 	scale(1.0f / length());
@@ -39,7 +66,7 @@ void Vec3f::scale(float s)
 {
 	for (int i = 0; i < 3; ++i)
 	{
-		xyz[i] *= s;
+		v[i] *= s;
 	}
 }
 
@@ -55,25 +82,25 @@ float Vec3f::dot(const Vec3f& a, const Vec3f& b)
 	float dp = 0.f;
 	for (int i = 0; i < 3; ++i)
 	{
-		dp += a.xyz[i] * b.xyz[i];
+		dp += a[i] * b[i];
 	}
 	return dp;
 }
 
 Vec3f Vec3f::cross(const Vec3f& a, const Vec3f& b)
 {
-	float x = a.m_y * b.m_z - a.m_z * b.m_y;
-	float y = a.m_z * b.m_x - a.m_x * b.m_z;
-	float z = a.m_x * b.m_y - a.m_y * b.m_x;
+	float x = a.y * b.z - a.z * b.y;
+	float y = a.z * b.x - a.x * b.z;
+	float z = a.x * b.y - a.y * b.x;
 	return Vec3f(x, y, z);
 }
 
 Vec3f operator-(const Vec3f& a, const Vec3f& b)
 {
-	return Vec3f(a.m_x - b.m_x, a.m_y - b.m_y, a.m_z - b.m_z);
+	return Vec3f(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
 Vec3f operator+(const Vec3f& a, const Vec3f& b)
 {
-	return Vec3f(a.m_x + b.m_x, a.m_y + b.m_y, a.m_z + b.m_z);
+	return Vec3f(a.x + b.x, a.y + b.y, a.z + b.z);
 }

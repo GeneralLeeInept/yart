@@ -1,10 +1,10 @@
 #include "mesh.h"
 
+#include <embree2/rtcore.h>
 #include <fstream>
 #include <regex>
 #include <sstream>
-
-#include "ray.h"
+#include <cinttypes>
 
 void tokenize(const std::string& line, const char* control, std::vector<std::string>& tokens)
 {
@@ -20,195 +20,204 @@ void tokenize(const std::string& line, const char* control, std::vector<std::str
 	}
 }
 
-bool Mesh::loadObj(const char* filename)
+bool Mesh::loadObj(const char* filename, __RTCScene* scene)
 {
 	std::ifstream objFile(filename);
 	std::string line;
-	std::vector<Vec3f> vertices;
-	std::vector<Vec3f> normals;
-	std::vector<Vec2f> textureCoordinates;
-	MicroMesh* microMesh = nullptr;
+
+	std::vector<float> vertices;
+	std::vector<int> triangles;
 
 	while (std::getline(objFile, line))
 	{
 		std::vector<std::string> tokens;
 		tokenize(line, " \t\r\n", tokens);
 
-		if (tokens.empty() || tokens[0] == "#")
+		if (tokens.empty())
 			continue;
 
 		if (tokens[0] == "v")
 		{
-			Vec3f v;
-
-			for (int i = 0; i < 3; ++i)
+			for (size_t i = 0; i < 3; ++i)
 			{
-				v.xyz[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+				vertices.push_back(static_cast<float>(atof(tokens[i + 1].c_str())));
 			}
-
-			vertices.push_back(v);
-		}
-		else if (tokens[0] == "vn")
-		{
-			Vec3f v;
-
-			for (int i = 0; i < 3; ++i)
-			{
-				v.xyz[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
-			}
-
-			normals.push_back(v);
-		}
-		else if (tokens[0] == "vt")
-		{
-			Vec2f v;
-
-			for (int i = 0; i < 2; ++i)
-			{
-				v.xy[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
-			}
-
-			textureCoordinates.push_back(v);
-		}
-		else if (tokens[0] == "g")
-		{
-			m_microMeshes.push_back(MicroMesh());
-			microMesh = &m_microMeshes.back();
+			vertices.push_back(1.0f);
 		}
 		else if (tokens[0] == "f")
 		{
-			IndexArray indices;
+			std::vector<int> indices;
 
 			for (size_t i = 1; i < tokens.size(); ++i)
 			{
-				indices.push_back(addVertex(tokens[i], vertices, normals, textureCoordinates));
+				int fileIndex = atoi(tokens[i].c_str());
+				if (fileIndex < 0)
+				{
+					indices.push_back(((int)vertices.size()) + fileIndex);
+				}
+				else if (fileIndex > 0)
+				{
+					indices.push_back(fileIndex - 1);
+				}
+				else
+				{
+					indices.push_back(0);
+				}
 			}
 
 			for (size_t i = 2; i < indices.size(); ++i)
 			{
-				microMesh->m_indices.push_back(indices[0]);
-				microMesh->m_indices.push_back(indices[i - 1]);
-				microMesh->m_indices.push_back(indices[i]);
+				triangles.push_back(indices[0]);
+				triangles.push_back(indices[i - 1]);
+				triangles.push_back(indices[i]);
 			}
 		}
+	}
+
+	size_t numTriangles = triangles.size() / 3;
+	size_t numVertices = vertices.size() / 4;
+
+	if (numTriangles > 0 && numVertices > 0)
+	{
+		unsigned geomId = rtcNewTriangleMesh(scene, RTC_GEOMETRY_STATIC, triangles.size() / 3, vertices.size() / 4);
+
+		float* geomVertices = (float*)rtcMapBuffer(scene, geomId, RTC_VERTEX_BUFFER);
+		memcpy(geomVertices, &vertices[0], sizeof(float) * vertices.size());
+		rtcUnmapBuffer(scene, geomId, RTC_VERTEX_BUFFER);
+
+		int* geomTriangles = (int*)rtcMapBuffer(scene, geomId, RTC_INDEX_BUFFER);
+		memcpy(geomTriangles, &triangles[0], sizeof(int) * triangles.size());
+		rtcUnmapBuffer(scene, geomId, RTC_INDEX_BUFFER);
 	}
 
 	return true;
 }
 
-#define EPSILON 0.000001
-
-bool triangle_intersection(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3, const Ray& ray, float& t, float& u,
-                           float& v)
+enum PlyElement
 {
-	Vec3f e1, e2; // Edge1, Edge2
-	Vec3f P, Q, T;
-	float det, inv_det;
+	Vertex,
+	Face,
+	Custom
+};
 
-	// Find vectors for two edges sharing V1
-	e1 = V2 - V1;
-	e2 = V3 - V1;
-
-	// Begin calculating determinant - also used to calculate u parameter
-	P = Vec3f::cross(ray.m_direction, e2);
-
-	// if determinant is near zero, ray lies in plane of triangle or ray is parallel to plane of triangle
-	det = Vec3f::dot(e1, P);
-	// NOT CULLING
-	if (det > -EPSILON && det < EPSILON)
-		return 0;
-
-	inv_det = 1.f / det;
-
-	// calculate distance from V1 to ray origin
-	T = ray.m_origin - V1;
-
-	// Calculate u parameter and test bound
-	u = Vec3f::dot(T, P) * inv_det;
-	// The intersection lies outside of the triangle
-	if (u < 0.f || u > 1.f)
-		return 0;
-
-	// Prepare to test v parameter
-	Q = Vec3f::cross(T, e1);
-
-	// Calculate V parameter and test bound
-	v = Vec3f::dot(ray.m_direction, Q) * inv_det;
-	// The intersection lies outside of the triangle
-	if (v < 0.f || u + v > 1.f)
-		return 0;
-
-	t = Vec3f::dot(e2, Q) * inv_det;
-
-	return (t > EPSILON);
-}
-
-bool Mesh::intersect(const Ray& ray, float& t) const
+bool Mesh::loadPly(const char * filename, __RTCScene * scene)
 {
-	t = std::numeric_limits<float>::max();
+	std::ifstream plyFile(filename);
+	std::string line;
 
-	for (auto& micromesh : m_microMeshes)
+	if (!std::getline(plyFile, line) || line != "ply")
 	{
-		int numTris = micromesh.m_indices.size() / 3;
-		for (int tri = 0; tri < numTris; ++tri)
+		return false;
+	}
+
+	std::vector<std::pair<PlyElement, unsigned>> elements;
+
+	while (std::getline(plyFile, line) && line != "end_header")
+	{
+		std::vector<std::string> tokens;
+		tokenize(line, " \t\r\n", tokens);
+
+		if (tokens.empty())
+			continue;
+
+		else if (tokens[0] == "format")
 		{
-			const Vertex& v1 = m_vertices[micromesh.m_indices[tri * 3 + 0]];
-			const Vertex& v2 = m_vertices[micromesh.m_indices[tri * 3 + 1]];
-			const Vertex& v3 = m_vertices[micromesh.m_indices[tri * 3 + 2]];
-			float tHit, u, v;
-			if (triangle_intersection(v1.m_position, v2.m_position, v3.m_position, ray, tHit, u, v) && tHit < t)
+			if (tokens[1] != "ascii" || tokens[2] != "1.0")
+				return false;
+		}		
+		else if (tokens[0] == "element")
+		{
+			int count = atoi(tokens[2].c_str());
+
+			if (tokens[1] == "vertex")
 			{
-				t = tHit;
+				elements.push_back(std::pair<PlyElement, unsigned>(Vertex, count));
+			}
+			else if (tokens[1] == "face")
+			{
+				elements.push_back(std::pair<PlyElement, unsigned>(Face, count));
+			}
+			else
+			{
+				elements.push_back(std::pair<PlyElement, unsigned>(Custom, count));
 			}
 		}
 	}
 
-	return t < std::numeric_limits<float>::max();
-}
+	std::vector<float> vertices;
+	std::vector<int> triangles;
 
-void Mesh::getSurfaceData(HitData& hitData) const
-{
-}
-
-int fixIndex(int fileIndex, size_t last)
-{
-	if (fileIndex < 0)
+	for (const auto& element : elements)
 	{
-		fileIndex = last - fileIndex + 1;
-	}
-	return fileIndex - 1;
-}
-
-Mesh::Index Mesh::addVertex(const std::string& decl, const std::vector<Vec3f>& vertices,
-                            const std::vector<Vec3f>& normals, const std::vector<Vec2f>& textureCoords)
-{
-	int indices[3] = {0};
-	std::regex re("(\\d+)(/(\\d+)?)?(/(\\d+)?)?");
-	std::smatch matches;
-	if (std::regex_match(decl, matches, re))
-	{
-		for (int i = 0; i < 3; ++i)
+		switch (element.first)
 		{
-			if (matches[i * 2 + 1].matched)
-				indices[i] = atoi(matches[(i * 2) + 1].str().c_str());
+		case Vertex:
+		{
+			for (unsigned i = 0; i < element.second; ++i)
+			{
+				std::getline(plyFile, line);
+				std::vector<std::string> tokens;
+				tokenize(line, " \t\r\n", tokens);
+				for (size_t j = 0; j < 3; ++j)
+				{
+					vertices.push_back(static_cast<float>(atof(tokens[j].c_str())));
+				}
+				vertices.push_back(1.0f);
+			}
+
+			break;
+		}
+		case Face:
+		{
+			for (unsigned i = 0; i < element.second; ++i)
+			{
+				std::getline(plyFile, line);
+				std::vector<std::string> tokens;
+				tokenize(line, " \t\r\n", tokens);
+				std::vector<int> indices;
+
+				int listLength = atoi(tokens[0].c_str());
+
+				for (int j = 1; j <= listLength; ++j)
+				{
+					indices.push_back(atoi(tokens[j].c_str()));
+				}
+
+				for (size_t j = 2; j < indices.size(); ++j)
+				{
+					triangles.push_back(indices[0]);
+					triangles.push_back(indices[j - 1]);
+					triangles.push_back(indices[j]);
+				}
+			}
+
+			break;
+		}
+		case Custom:
+		{
+			for (unsigned i = 0; i < element.second; ++i)
+			{
+				std::getline(plyFile, line);
+			}
+		}
 		}
 	}
 
-	Vertex v;
-	if (indices[0])
+	size_t numTriangles = triangles.size() / 3;
+	size_t numVertices = vertices.size() / 4;
+
+	if (numTriangles > 0 && numVertices > 0)
 	{
-		v.m_position = vertices[fixIndex(indices[0], vertices.size())];
-	}
-	if (indices[2])
-	{
-		v.m_normal = normals[fixIndex(indices[2], normals.size())];
-	}
-	if (indices[1])
-	{
-		v.m_textureCoordinate = textureCoords[fixIndex(indices[1], textureCoords.size())];
+		unsigned geomId = rtcNewTriangleMesh(scene, RTC_GEOMETRY_STATIC, triangles.size() / 3, vertices.size() / 4);
+
+		float* geomVertices = (float*)rtcMapBuffer(scene, geomId, RTC_VERTEX_BUFFER);
+		memcpy(geomVertices, &vertices[0], sizeof(float) * vertices.size());
+		rtcUnmapBuffer(scene, geomId, RTC_VERTEX_BUFFER);
+
+		int* geomTriangles = (int*)rtcMapBuffer(scene, geomId, RTC_INDEX_BUFFER);
+		memcpy(geomTriangles, &triangles[0], sizeof(int) * triangles.size());
+		rtcUnmapBuffer(scene, geomId, RTC_INDEX_BUFFER);
 	}
 
-	m_vertices.push_back(v);
-
-	return m_vertices.size() - 1;
+	return true;
 }

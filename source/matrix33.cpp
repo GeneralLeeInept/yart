@@ -6,8 +6,8 @@ Matrix33::Matrix33()
 }
 
 Matrix33::Matrix33(const Vec3f& x, const Vec3f& y, const Vec3f& z)
-  : m_x(x)
-  , m_y(y)
-  , m_z(z)
+  : X(x)
+  , Y(y)
+  , Z(z)
 {
 }
