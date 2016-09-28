@@ -76,19 +76,23 @@ int main(int argc, char* argv)
 	std::unique_ptr<__RTCScene, decltype(sceneDeleter)> scene(
 	  rtcDeviceNewScene(device.get(), RTC_SCENE_STATIC, RTC_INTERSECT1), sceneDeleter);
 	Mesh mesh;
-//	mesh.loadObj("C:/Development/raytracer/data/crytek-sponza/sponza.obj", scene.get());
-//	mesh.loadPly("C:/Development/raytracer/data/armadillo.ply", scene.get());
-//	mesh.loadPly("C:/Development/raytracer/data/dragon.ply", scene.get());
-	mesh.loadPly("C:/Development/raytracer/data/happy.ply", scene.get());
-//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/dragon.ply", scene.get());
-//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/happy.ply", scene.get());
-//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/bunny.ply", scene.get());
+//	mesh.loadObj("C:/Development/raytracer/data/crytek-sponza/sponza.obj");
+//	mesh.loadObj("C:/Development/raytracer/data/teapot/teapot.obj");
+	mesh.loadObj("C:/Development/raytracer/data/buddha/buddha.obj");
+//	mesh.loadObj("C:/Development/raytracer/data/dragon/dragon.obj");
+//	mesh.loadPly("C:/Development/raytracer/data/armadillo.ply");
+//	mesh.loadPly("C:/Development/raytracer/data/dragon.ply");
+//	mesh.loadPly("C:/Development/raytracer/data/happy.ply");
+//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/dragon.ply");
+//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/happy.ply");
+//	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/bunny.ply");
+	mesh.addToScene(scene.get());
 	rtcCommit(scene.get());
 
 	std::unique_ptr<RenderTarget> renderTarget(new RenderTarget(600, 600));
 	Camera camera;
-	camera.m_orientation.rotateY(static_cast<float>(M_PI));
-	camera.m_position = Vec3f(0.0f, 0.1f, 0.2f);
+	camera.m_orientation.rotateY(static_cast<float>(-M_PI_2));
+	camera.m_position = Vec3f(1.f, 0.0f, 0.0f);
 	render(camera, scene.get(), *(renderTarget.get()));
 	renderTarget->save("test.png");
 
