@@ -1,10 +1,10 @@
 #include "mesh.h"
 
+#include <cinttypes>
 #include <embree2/rtcore.h>
 #include <fstream>
 #include <regex>
 #include <sstream>
-#include <cinttypes>
 
 void tokenize(const std::string& line, const char* control, std::vector<std::string>& tokens)
 {
@@ -79,7 +79,8 @@ bool Mesh::loadObj(const char* filename, __RTCScene* scene)
 
 	if (numTriangles > 0 && numVertices > 0)
 	{
-		unsigned geomId = rtcNewTriangleMesh(scene, RTC_GEOMETRY_STATIC, triangles.size() / 3, vertices.size() / 4);
+		unsigned geomId =
+		  rtcNewTriangleMesh(scene, RTC_GEOMETRY_STATIC, triangles.size() / 3, vertices.size() / 4);
 
 		float* geomVertices = (float*)rtcMapBuffer(scene, geomId, RTC_VERTEX_BUFFER);
 		memcpy(geomVertices, &vertices[0], sizeof(float) * vertices.size());
@@ -100,7 +101,7 @@ enum PlyElement
 	Custom
 };
 
-bool Mesh::loadPly(const char * filename, __RTCScene * scene)
+bool Mesh::loadPly(const char* filename, __RTCScene* scene)
 {
 	std::ifstream plyFile(filename);
 	std::string line;
@@ -124,7 +125,7 @@ bool Mesh::loadPly(const char * filename, __RTCScene * scene)
 		{
 			if (tokens[1] != "ascii" || tokens[2] != "1.0")
 				return false;
-		}		
+		}
 		else if (tokens[0] == "element")
 		{
 			int count = atoi(tokens[2].c_str());
@@ -151,55 +152,55 @@ bool Mesh::loadPly(const char * filename, __RTCScene * scene)
 	{
 		switch (element.first)
 		{
-		case Vertex:
-		{
-			for (unsigned i = 0; i < element.second; ++i)
+			case Vertex:
 			{
-				std::getline(plyFile, line);
-				std::vector<std::string> tokens;
-				tokenize(line, " \t\r\n", tokens);
-				for (size_t j = 0; j < 3; ++j)
+				for (unsigned i = 0; i < element.second; ++i)
 				{
-					vertices.push_back(static_cast<float>(atof(tokens[j].c_str())));
-				}
-				vertices.push_back(1.0f);
-			}
-
-			break;
-		}
-		case Face:
-		{
-			for (unsigned i = 0; i < element.second; ++i)
-			{
-				std::getline(plyFile, line);
-				std::vector<std::string> tokens;
-				tokenize(line, " \t\r\n", tokens);
-				std::vector<int> indices;
-
-				int listLength = atoi(tokens[0].c_str());
-
-				for (int j = 1; j <= listLength; ++j)
-				{
-					indices.push_back(atoi(tokens[j].c_str()));
+					std::getline(plyFile, line);
+					std::vector<std::string> tokens;
+					tokenize(line, " \t\r\n", tokens);
+					for (size_t j = 0; j < 3; ++j)
+					{
+						vertices.push_back(static_cast<float>(atof(tokens[j].c_str())));
+					}
+					vertices.push_back(1.0f);
 				}
 
-				for (size_t j = 2; j < indices.size(); ++j)
+				break;
+			}
+			case Face:
+			{
+				for (unsigned i = 0; i < element.second; ++i)
 				{
-					triangles.push_back(indices[0]);
-					triangles.push_back(indices[j - 1]);
-					triangles.push_back(indices[j]);
+					std::getline(plyFile, line);
+					std::vector<std::string> tokens;
+					tokenize(line, " \t\r\n", tokens);
+					std::vector<int> indices;
+
+					int listLength = atoi(tokens[0].c_str());
+
+					for (int j = 1; j <= listLength; ++j)
+					{
+						indices.push_back(atoi(tokens[j].c_str()));
+					}
+
+					for (size_t j = 2; j < indices.size(); ++j)
+					{
+						triangles.push_back(indices[0]);
+						triangles.push_back(indices[j - 1]);
+						triangles.push_back(indices[j]);
+					}
+				}
+
+				break;
+			}
+			case Custom:
+			{
+				for (unsigned i = 0; i < element.second; ++i)
+				{
+					std::getline(plyFile, line);
 				}
 			}
-
-			break;
-		}
-		case Custom:
-		{
-			for (unsigned i = 0; i < element.second; ++i)
-			{
-				std::getline(plyFile, line);
-			}
-		}
 		}
 	}
 
@@ -208,7 +209,8 @@ bool Mesh::loadPly(const char * filename, __RTCScene * scene)
 
 	if (numTriangles > 0 && numVertices > 0)
 	{
-		unsigned geomId = rtcNewTriangleMesh(scene, RTC_GEOMETRY_STATIC, triangles.size() / 3, vertices.size() / 4);
+		unsigned geomId =
+		  rtcNewTriangleMesh(scene, RTC_GEOMETRY_STATIC, triangles.size() / 3, vertices.size() / 4);
 
 		float* geomVertices = (float*)rtcMapBuffer(scene, geomId, RTC_VERTEX_BUFFER);
 		memcpy(geomVertices, &vertices[0], sizeof(float) * vertices.size());

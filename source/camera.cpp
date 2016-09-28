@@ -6,7 +6,8 @@ void Camera::createRay(RTCRay& ray, float u, float v) const
 {
 	Vec3f direction(u, v, 1.0);
 	direction.normalise();
-	
+	direction = m_orientation * direction;
+
 	for (int i = 0; i < 3; ++i)
 	{
 		ray.org[i] = m_position[i];

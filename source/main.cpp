@@ -25,7 +25,7 @@ void render(const Camera& camera, RTCScene scene, RenderTarget& target)
 	std::chrono::system_clock::time_point start, end;
 	start = std::chrono::system_clock::now();
 
-	Vec3f lightP(1.f, 1.f, -1.f);	// light position
+	Vec3f lightP(1.f, 1.f, 1.f);	// light position
 
 	for (unsigned y = 0; y < target.getHeight(); ++y)
 	{
@@ -76,7 +76,10 @@ int main(int argc, char* argv)
 	std::unique_ptr<__RTCScene, decltype(sceneDeleter)> scene(
 	  rtcDeviceNewScene(device.get(), RTC_SCENE_STATIC, RTC_INTERSECT1), sceneDeleter);
 	Mesh mesh;
-	mesh.loadObj("C:/Development/raytracer/data/crytek-sponza/sponza.obj", scene.get());
+//	mesh.loadObj("C:/Development/raytracer/data/crytek-sponza/sponza.obj", scene.get());
+//	mesh.loadPly("C:/Development/raytracer/data/armadillo.ply", scene.get());
+//	mesh.loadPly("C:/Development/raytracer/data/dragon.ply", scene.get());
+	mesh.loadPly("C:/Development/raytracer/data/happy.ply", scene.get());
 //	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/dragon.ply", scene.get());
 //	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/happy.ply", scene.get());
 //	mesh.loadPly("C:/Users/derek.burnheim/Documents/3dmodels/bunny.ply", scene.get());
@@ -84,7 +87,8 @@ int main(int argc, char* argv)
 
 	std::unique_ptr<RenderTarget> renderTarget(new RenderTarget(600, 600));
 	Camera camera;
-	camera.m_position = Vec3f(0.0f, 0.1f, -0.25f);
+	camera.m_orientation.rotateY(static_cast<float>(M_PI));
+	camera.m_position = Vec3f(0.0f, 0.1f, 0.2f);
 	render(camera, scene.get(), *(renderTarget.get()));
 	renderTarget->save("test.png");
 
