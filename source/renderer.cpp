@@ -13,7 +13,7 @@ Renderer::Renderer()
 {
 	m_device = rtcNewDevice();
 	m_scene = rtcDeviceNewScene(m_device, RTC_SCENE_STATIC, RTC_INTERSECT1);
-	m_needsCommit = false;
+	m_needsCommit = true;
 }
 
 Renderer::~Renderer()
