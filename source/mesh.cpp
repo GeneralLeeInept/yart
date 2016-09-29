@@ -35,12 +35,12 @@ bool Mesh::loadObj(const char* filename)
 
 		if (tokens[0] == "v")
 		{
-			Vertex v;
+			Vec3f v;
 			for (size_t i = 0; i < 3; ++i)
 			{
-				v.position[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+				v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
-			m_vertices.push_back(v);
+			m_positionData.push_back(v);
 		}
 		else if (tokens[0] == "f")
 		{
@@ -51,7 +51,7 @@ bool Mesh::loadObj(const char* filename)
 				int fileIndex = atoi(tokens[i].c_str());
 				if (fileIndex < 0)
 				{
-					indices.push_back(((int)m_vertices.size()) + fileIndex);
+					indices.push_back(((int)m_positionData.size()) + fileIndex);
 				}
 				else if (fileIndex > 0)
 				{
@@ -66,10 +66,10 @@ bool Mesh::loadObj(const char* filename)
 			for (size_t i = 2; i < indices.size(); ++i)
 			{
 				Triangle t;
-				t.positions[0] = indices[0];
-				t.positions[1] = indices[i - 1];
-				t.positions[2] = indices[i];
-				m_triangles.push_back(t);
+				t.v1 = indices[0];
+				t.v2 = indices[i - 1];
+				t.v3 = indices[i];
+				m_positions.push_back(t);
 			}
 		}
 	}
@@ -139,12 +139,12 @@ bool Mesh::loadPly(const char* filename)
 					std::getline(plyFile, line);
 					std::vector<std::string> tokens;
 					tokenize(line, " \t\r\n", tokens);
-					Vertex v;
+					Vec3f v;
 					for (size_t j = 0; j < 3; ++j)
 					{
-						v.position[j] = static_cast<float>(atof(tokens[j].c_str()));
+						v[j] = static_cast<float>(atof(tokens[j].c_str()));
 					}
-					m_vertices.push_back(v);
+					m_positionData.push_back(v);
 				}
 				break;
 			}
@@ -167,10 +167,10 @@ bool Mesh::loadPly(const char* filename)
 					for (size_t j = 2; j < indices.size(); ++j)
 					{
 						Triangle t;
-						t.positions[0] = indices[0];
-						t.positions[1] = indices[j - 1];
-						t.positions[2] = indices[j];
-						m_triangles.push_back(t);
+						t.v1 = indices[0];
+						t.v2 = indices[j - 1];
+						t.v3 = indices[j];
+						m_positions.push_back(t);
 					}
 				}
 
@@ -189,18 +189,23 @@ bool Mesh::loadPly(const char* filename)
 	return true;
 }
 
-void Mesh::addToScene(__RTCScene* scene)
+Vec3f Mesh::shade(const Vec3f & P, const Vec3f & N, float u, float v) const
 {
-	if (m_triangles.size() > 0 && m_vertices.size() > 0)
-	{
-		unsigned geomId = rtcNewTriangleMesh(scene, RTC_GEOMETRY_STATIC, m_triangles.size(), m_vertices.size());
+	// Vec3f L = lightP - hitP;
+	// L.normalise();
+	// float nDotL = -Vec3f::dot(N, L);
+	// uint8_t l = 0;
+	// if (compareFloats(nDotL, 0.0f) > 0)
+	//	l = static_cast<uint8_t>(nDotL * 255.0f);
+	// target.setPixel(x, y, Colour(l, l, l));
+	Vec3f colour = N + Vec3f::One;
+	colour.scale(0.5f);
+	return colour;
+}
 
-		float* geomVertices = (float*)rtcMapBuffer(scene, geomId, RTC_VERTEX_BUFFER);
-		memcpy(geomVertices, &m_vertices[0], sizeof(Vertex) * m_vertices.size());
-		rtcUnmapBuffer(scene, geomId, RTC_VERTEX_BUFFER);
-
-		int* geomTriangles = (int*)rtcMapBuffer(scene, geomId, RTC_INDEX_BUFFER);
-		memcpy(geomTriangles, &m_triangles[0], sizeof(Triangle) * m_triangles.size());
-		rtcUnmapBuffer(scene, geomId, RTC_INDEX_BUFFER);
-	}
+Vec3f calculateNormal(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3)
+{
+	Vec3f V1V2 = V2 - V1;
+	Vec3f V1V3 = V3 - V1;
+	return Vec3f::cross(V1V2, V1V3);
 }

@@ -11,19 +11,15 @@ public:
 	bool loadObj(const char* filename);
 	bool loadPly(const char* filename);
 
-	void addToScene(struct __RTCScene* scene);
-
-	struct Vertex
-	{
-		Vec3f position;
-		float pad;
-	};
+	Vec3f shade(const Vec3f& P, const Vec3f& N, float u, float v) const;
 
 	struct Triangle
 	{
-		int positions[3];
+		int v1, v2, v3;
 	};
 
-	std::vector<Vertex> m_vertices;
-	std::vector<Triangle> m_triangles;
+	std::vector<Vec3f> m_positionData;
+	std::vector<Vec3f> m_normalData;
+	std::vector<Triangle> m_positions;
+	std::vector<Triangle> m_normals;
 };
