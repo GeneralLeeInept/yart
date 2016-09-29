@@ -14,6 +14,16 @@ Matrix33::Matrix33(const Vec3f& x, const Vec3f& y, const Vec3f& z)
 {
 }
 
+void Matrix33::rotateX(float radians)
+{
+	Matrix33 rotation;
+	float s = sinf(radians);
+	float c = cosf(radians);
+	rotation.Y = Vec3f(0, -s, c);
+	rotation.Z = Vec3f(0, c, s);
+	*this = *this * rotation;
+}
+
 void Matrix33::rotateY(float radians)
 {
 	Matrix33 rotation;

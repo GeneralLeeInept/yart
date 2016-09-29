@@ -8,6 +8,7 @@ public:
 	Matrix33();
 	Matrix33(const Vec3f& x, const Vec3f& y, const Vec3f& z);
 
+	void rotateX(float radians);
 	void rotateY(float radians);
 
 	Vec3f operator*(const Vec3f& V) const;
