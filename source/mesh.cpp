@@ -20,6 +20,11 @@ void tokenize(const std::string& line, const char* control, std::vector<std::str
 	}
 }
 
+Mesh::Mesh(const Renderer & renderer)
+	: SceneObject(renderer)
+{
+}
+
 bool Mesh::loadObj(const char* filename)
 {
 	std::ifstream objFile(filename);
@@ -189,8 +194,47 @@ bool Mesh::loadPly(const char* filename)
 	return true;
 }
 
-Vec3f Mesh::shade(const Vec3f & P, const Vec3f & N, float u, float v) const
+Vec3f calculateNormal(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3)
 {
+	Vec3f V1V2 = V2 - V1;
+	Vec3f V1V3 = V3 - V1;
+	Vec3f N = Vec3f::cross(V1V3, V1V2);
+	N.normalise();
+	return N;
+}
+
+void Mesh::computeNormals()
+{
+	std::vector<Vec3f> faceNormals;
+	for (const auto& tri : m_positions)
+	{
+		Vec3f N = calculateNormal(m_positionData[tri.v1], m_positionData[tri.v2], m_positionData[tri.v3]);
+		faceNormals.push_back(N);
+	}
+
+	m_normalData.resize(m_positionData.size());
+
+	for (size_t i = 0; i < m_positions.size(); ++i)
+	{
+		m_normalData[m_positions[i].v1] = m_normalData[m_positions[i].v1] + faceNormals[i];
+		m_normalData[m_positions[i].v2] = m_normalData[m_positions[i].v2] + faceNormals[i];
+		m_normalData[m_positions[i].v3] = m_normalData[m_positions[i].v3] + faceNormals[i];
+	}
+
+	for (auto& N : m_normalData)
+	{
+		N.normalise();
+	}
+}
+
+void Mesh::shade(const Vec3f& P, const Vec3f& N, unsigned primId, float u, float v, Vec3f& colour) const
+{
+	const Triangle& tri = m_positions[primId];
+	Vec3f CN = m_normalData[tri.v1];
+	CN.scale(1 - u - v);
+	CN.scaleAdd(m_normalData[tri.v2], u);
+	CN.scaleAdd(m_normalData[tri.v3], v);
+	
 	// Vec3f L = lightP - hitP;
 	// L.normalise();
 	// float nDotL = -Vec3f::dot(N, L);
@@ -198,14 +242,6 @@ Vec3f Mesh::shade(const Vec3f & P, const Vec3f & N, float u, float v) const
 	// if (compareFloats(nDotL, 0.0f) > 0)
 	//	l = static_cast<uint8_t>(nDotL * 255.0f);
 	// target.setPixel(x, y, Colour(l, l, l));
-	Vec3f colour = N + Vec3f::One;
+	colour = CN + Vec3f::One;
 	colour.scale(0.5f);
-	return colour;
-}
-
-Vec3f calculateNormal(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3)
-{
-	Vec3f V1V2 = V2 - V1;
-	Vec3f V1V3 = V3 - V1;
-	return Vec3f::cross(V1V2, V1V3);
 }

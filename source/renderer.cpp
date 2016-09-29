@@ -13,6 +13,7 @@ Renderer::Renderer()
 {
 	m_device = rtcNewDevice();
 	m_scene = rtcDeviceNewScene(m_device, RTC_SCENE_STATIC, RTC_INTERSECT1);
+	m_needsCommit = false;
 }
 
 Renderer::~Renderer()
@@ -21,10 +22,10 @@ Renderer::~Renderer()
 	rtcDeleteDevice(m_device);
 }
 
-void Renderer::addMesh(const Mesh & mesh)
+void Renderer::addMesh(Mesh* mesh)
 {
-	size_t numTriangles = mesh.m_positions.size();
-	size_t numVertices = mesh.m_positionData.size();
+	size_t numTriangles = mesh->m_positions.size();
+	size_t numVertices = mesh->m_positionData.size();
 	if (numTriangles > 0 && numVertices > 0)
 	{
 		unsigned geomId = rtcNewTriangleMesh(m_scene, RTC_GEOMETRY_STATIC, numTriangles, numVertices);
@@ -32,7 +33,7 @@ void Renderer::addMesh(const Mesh & mesh)
 		if (geomId != RTC_INVALID_GEOMETRY_ID)
 		{
 			float* geomVertices = (float*)rtcMapBuffer(m_scene, geomId, RTC_VERTEX_BUFFER);
-			for (const Vec3f& v : mesh.m_positionData)
+			for (const Vec3f& v : mesh->m_positionData)
 			{
 				for (int i = 0; i < 3; ++i)
 				{
@@ -43,10 +44,12 @@ void Renderer::addMesh(const Mesh & mesh)
 			rtcUnmapBuffer(m_scene, geomId, RTC_VERTEX_BUFFER);
 
 			int* geomTriangles = (int*)rtcMapBuffer(m_scene, geomId, RTC_INDEX_BUFFER);
-			memcpy(geomTriangles, &mesh.m_positions[0], sizeof(Mesh::Triangle) * mesh.m_positions.size());
+			memcpy(geomTriangles, &mesh->m_positions[0], sizeof(Mesh::Triangle) * mesh->m_positions.size());
 			rtcUnmapBuffer(m_scene, geomId, RTC_INDEX_BUFFER);
 
-			m_geometry[geomId] = &mesh;
+			m_geometry[geomId].reset(mesh);
+
+			m_needsCommit = true;
 		}
 	}
 }
@@ -54,10 +57,14 @@ void Renderer::addMesh(const Mesh & mesh)
 void Renderer::commitScene()
 {
 	rtcCommit(m_scene);
+	m_needsCommit = false;
 }
 
 void Renderer::render(const Camera & camera, RenderTarget & target)
 {
+	if (m_needsCommit)
+		commitScene();
+
 	float uscale = 1.0f / static_cast<float>(target.getWidth() - 1);
 	float vscale = 1.0f / static_cast<float>(target.getHeight() - 1);
 
@@ -89,7 +96,8 @@ void Renderer::render(const Camera & camera, RenderTarget & target)
 				N.normalise();
 				Vec3f hitP(ray.org);
 				hitP.scaleAdd(Vec3f(ray.dir), ray.tfar);
-				Vec3f cf = m_geometry[ray.geomID]->shade(hitP, N, ray.u, ray.v);
+				Vec3f cf;
+				m_geometry[ray.geomID]->shade(hitP, N, ray.primID, ray.u, ray.v, cf);
 				target.setPixel(x, y, Colour(cf));
 			}
 			else

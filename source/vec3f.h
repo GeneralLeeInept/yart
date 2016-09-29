@@ -9,7 +9,8 @@ public:
 	static Vec3f Zero;
 	static Vec3f One;
 
-	Vec3f(float f = 0.0f);
+	Vec3f();
+	Vec3f(float f);
 	Vec3f(float x, float y, float z);
 	Vec3f(float* v);
 

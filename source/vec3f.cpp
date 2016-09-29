@@ -8,6 +8,11 @@ Vec3f Vec3f::UnitZ(0.0, 0.0, 1.0);
 Vec3f Vec3f::Zero(0.0, 0.0, 0.0);
 Vec3f Vec3f::One(1.0, 1.0, 1.0);
 
+Vec3f::Vec3f()
+	: Vec3f(Zero)
+{
+}
+
 Vec3f::Vec3f(float f)
   : Vec3f(f, f, f)
 {

@@ -1,17 +1,22 @@
 #pragma once
 
+#include "sceneobject.h"
 #include "vec3f.h"
 #include <memory>
 #include <string>
 #include <vector>
 
-class Mesh
+class Mesh : public SceneObject
 {
 public:
+	Mesh(const Renderer& renderer);
+
 	bool loadObj(const char* filename);
 	bool loadPly(const char* filename);
 
-	Vec3f shade(const Vec3f& P, const Vec3f& N, float u, float v) const;
+	void computeNormals();
+
+	void shade(const Vec3f& P, const Vec3f& N, unsigned primId, float u, float v, Vec3f& colour) const;
 
 	struct Triangle
 	{
