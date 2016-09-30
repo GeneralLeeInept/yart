@@ -1,6 +1,6 @@
 #include "sceneobject.h"
 
-SceneObject::SceneObject(const Renderer & renderer)
-	: m_renderer(renderer)
+SceneObject::SceneObject(Renderer& renderer)
+  : m_renderer(renderer)
 {
 }

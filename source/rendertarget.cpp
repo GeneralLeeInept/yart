@@ -32,8 +32,8 @@ void RenderTarget::setPixel(unsigned x, unsigned y, const Colour& colour)
 	FreeImage_SetPixelColor(m_bitmap, x, getHeight() - 1 - y, &rgb);
 }
 
-void RenderTarget::save(const char* filename)
+void RenderTarget::save(const std::string& filename)
 {
 	FreeImage_AdjustColors(m_bitmap, 0.0, 0.0, 2.2);
-	FreeImage_Save(FIF_PNG, m_bitmap, filename);
+	FreeImage_Save(FIF_PNG, m_bitmap, filename.c_str());
 }

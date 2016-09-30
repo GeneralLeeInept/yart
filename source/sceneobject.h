@@ -7,8 +7,8 @@ class Renderer;
 class SceneObject : public IShadable
 {
 public:
-	SceneObject(const Renderer& renderer);
+	SceneObject(Renderer& renderer);
 
 protected:
-	const Renderer& m_renderer;
+	Renderer& m_renderer;
 };

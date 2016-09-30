@@ -19,8 +19,8 @@ void Matrix33::rotateX(float radians)
 	Matrix33 rotation;
 	float s = sinf(radians);
 	float c = cosf(radians);
-	rotation.Y = Vec3f(0, c, -s);
-	rotation.Z = Vec3f(0, s, c);
+	rotation.Y = Vec3f(0, c, s);
+	rotation.Z = Vec3f(0, -s, c);
 	*this = *this * rotation;
 }
 

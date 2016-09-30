@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 struct FIBITMAP;
 class Colour;
 
@@ -14,7 +16,7 @@ public:
 
 	void setPixel(unsigned x, unsigned y, const Colour& colour);
 
-	void save(const char* filename);
+	void save(const std::string& filename);
 
 private:
 	FIBITMAP* m_bitmap;

@@ -33,9 +33,9 @@ int main(int argc, char* argv)
 	renderer.addMesh(mesh);
 
 	Camera camera;
-	camera.m_orientation.rotateY(static_cast<float>(M_PI_2));
-	camera.m_orientation.rotateX(static_cast<float>(-M_PI) * 0.0f);
-	camera.m_position = camera.m_orientation * Vec3f(0.0f, 170.0f, 0.0f);
+	camera.m_orientation.rotateY(static_cast<float>(M_PI * 0.7f));
+	camera.m_orientation.rotateX(static_cast<float>(M_PI) * 0.125f);
+	camera.m_position = camera.m_orientation * Vec3f(150.0f, 420.0f, -800.0f);
 
 	RenderTarget target(1280*4, 720*4);
 	renderer.render(camera, target);

@@ -1,5 +1,6 @@
 #include "mesh.h"
 
+#include "renderer.h"
 #include <cinttypes>
 #include <embree2/rtcore.h>
 #include <fstream>
@@ -20,17 +21,27 @@ void tokenize(const std::string& line, const char* control, std::vector<std::str
 	}
 }
 
-Mesh::Mesh(const Renderer & renderer)
-	: SceneObject(renderer)
+std::string getDirectory(const std::string& filename)
 {
-	m_default.Kd = Vec3f(0.5880f, 0.5880f, 0.5880f);
+	size_t dirpart = filename.find_last_of("/", std::string::npos);
+	if (dirpart != std::string::npos)
+		return filename.substr(0, dirpart + 1);
+	return std::string();
 }
 
-bool Mesh::loadObj(const char* filename)
+Mesh::Mesh(Renderer& renderer)
+  : SceneObject(renderer)
+{
+	m_defaultMaterial.Kd = Vec3f(0.5880f, 0.5880f, 0.5880f);
+}
+
+bool Mesh::loadMtlLib(const std::string& filename)
 {
 	std::ifstream objFile(filename);
-	std::string line;
+	std::string path = getDirectory(filename);
 
+	Material* mtl = nullptr;
+	std::string line;
 	while (std::getline(objFile, line))
 	{
 		std::vector<std::string> tokens;
@@ -39,7 +50,73 @@ bool Mesh::loadObj(const char* filename)
 		if (tokens.empty())
 			continue;
 
-		if (tokens[0] == "v")
+		if (tokens[0] == "newmtl")
+		{
+			mtl = new Material();
+			m_materialLibrary[tokens[1]] = mtl;
+		}
+		else if (tokens[0] == "Ns")
+		{
+			mtl->Ns = static_cast<float>(atof(tokens[1].c_str()));
+		}
+		else if (tokens[0] == "Ka")
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				mtl->Ka[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+			}
+		}
+		else if (tokens[0] == "Kd")
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				mtl->Kd[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+			}
+		}
+		else if (tokens[0] == "Ks")
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				mtl->Ks[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+			}
+		}
+		else if (tokens[0] == "map_Kd")
+		{
+			mtl->map_Kd = m_renderer.loadTexture(path + tokens[1]);
+		}
+	}
+
+	return true;
+}
+
+bool Mesh::loadObj(const std::string& filename)
+{
+	std::ifstream objFile(filename);
+	std::string path = getDirectory(filename);
+	Material* useMaterial = &m_defaultMaterial;
+
+	std::string line;
+	while (std::getline(objFile, line))
+	{
+		std::vector<std::string> tokens;
+		tokenize(line, " \t\r\n", tokens);
+
+		if (tokens.empty())
+			continue;
+
+		if (tokens[0] == "mtllib")
+		{
+			loadMtlLib(path + tokens[1]);
+		}
+		else if (tokens[0] == "usemtl")
+		{
+			auto it = m_materialLibrary.find(tokens[1]);
+			if (it != m_materialLibrary.end())
+				useMaterial = it->second;
+			else
+				useMaterial = &m_defaultMaterial;
+		}
+		else if (tokens[0] == "v")
 		{
 			Vec3f v;
 			for (size_t i = 0; i < 3; ++i)
@@ -47,6 +124,15 @@ bool Mesh::loadObj(const char* filename)
 				v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
 			}
 			m_positionData.push_back(v);
+		}
+		else if (tokens[0] == "vt")
+		{
+			Vec3f v;
+			for (size_t i = 0; i < 3; ++i)
+			{
+				v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+			}
+			m_texcoordData.push_back(v);
 		}
 		else if (tokens[0] == "vn")
 		{
@@ -61,6 +147,7 @@ bool Mesh::loadObj(const char* filename)
 		{
 			std::vector<int> positions;
 			std::vector<int> normals;
+			std::vector<int> texcoords;
 
 			for (size_t i = 1; i < tokens.size(); ++i)
 			{
@@ -82,8 +169,25 @@ bool Mesh::loadObj(const char* filename)
 				size_t vt = tokens[i].find_first_of("/", 0);
 				size_t vn = std::string::npos;
 
-				if (vt != std::string::npos)
+				if (vt != std::string::npos && vt < tokens[i].size() - 1 && tokens[i].at(vt + 1) != '/')
+				{
+					int fileIndex = atoi(tokens[i].substr(vt + 1).c_str());
+
+					if (fileIndex < 0)
+					{
+						texcoords.push_back(((int)m_texcoordData.size()) + fileIndex);
+					}
+					else if (fileIndex > 0)
+					{
+						texcoords.push_back(fileIndex - 1);
+					}
+					else
+					{
+						texcoords.push_back(0);
+					}
+
 					vn = tokens[i].find_first_of("/,", vt + 1);
+				}
 
 				if (vn != std::string::npos && vn < tokens[i].size() - 1)
 				{
@@ -111,6 +215,16 @@ bool Mesh::loadObj(const char* filename)
 				t.v2 = positions[i - 1];
 				t.v3 = positions[i];
 				m_positions.push_back(t);
+				m_materials.push_back(useMaterial);
+			}
+
+			for (size_t i = 2; i < texcoords.size(); ++i)
+			{
+				Triangle t;
+				t.v1 = texcoords[0];
+				t.v2 = texcoords[i - 1];
+				t.v3 = texcoords[i];
+				m_texcoords.push_back(t);
 			}
 
 			for (size_t i = 2; i < normals.size(); ++i)
@@ -134,7 +248,7 @@ enum PlyElement
 	Custom
 };
 
-bool Mesh::loadPly(const char* filename)
+bool Mesh::loadPly(const std::string& filename)
 {
 	std::ifstream plyFile(filename);
 	std::string line;
@@ -279,10 +393,22 @@ void Mesh::computeNormals()
 
 void Mesh::shade(const Vec3f& P, const Vec3f& N, unsigned primId, float u, float v, Vec3f& colour) const
 {
-	const Triangle& tri = m_normals[primId];
+	Triangle tri = m_normals[primId];
 	Vec3f CN = m_normalData[tri.v1];
 	CN.scale(1 - u - v);
 	CN.scaleAdd(m_normalData[tri.v2], u);
 	CN.scaleAdd(m_normalData[tri.v3], v);
-	m_default.shade(P, CN, primId, u, v, colour);
+
+	Vec3f ST(u, v, 0.0f);
+
+	if (m_texcoords.size() > 0)
+	{
+		tri = m_texcoords[primId];
+		ST = m_texcoordData[tri.v1];
+		ST.scale(1 - u - v);
+		ST.scaleAdd(m_texcoordData[tri.v2], u);
+		ST.scaleAdd(m_texcoordData[tri.v3], v);
+	}
+
+	m_materials[primId]->shade(P, CN, ST, u, v, colour);
 }

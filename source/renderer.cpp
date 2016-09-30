@@ -60,6 +60,11 @@ void Renderer::commitScene()
 	m_needsCommit = false;
 }
 
+TexturePtr Renderer::loadTexture(const std::string & filename)
+{
+	return m_textureManager.load(filename);
+}
+
 void Renderer::render(const Camera & camera, RenderTarget & target)
 {
 	if (m_needsCommit)
