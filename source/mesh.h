@@ -1,5 +1,6 @@
 #pragma once
 
+#include "material.h"
 #include "sceneobject.h"
 #include "vec3f.h"
 #include <memory>
@@ -27,4 +28,5 @@ public:
 	std::vector<Vec3f> m_normalData;
 	std::vector<Triangle> m_positions;
 	std::vector<Triangle> m_normals;
+	Material m_default;
 };

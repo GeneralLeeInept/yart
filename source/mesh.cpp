@@ -23,6 +23,7 @@ void tokenize(const std::string& line, const char* control, std::vector<std::str
 Mesh::Mesh(const Renderer & renderer)
 	: SceneObject(renderer)
 {
+	m_default.Kd = Vec3f(0.5880f, 0.5880f, 0.5880f);
 }
 
 bool Mesh::loadObj(const char* filename)
@@ -47,34 +48,78 @@ bool Mesh::loadObj(const char* filename)
 			}
 			m_positionData.push_back(v);
 		}
+		else if (tokens[0] == "vn")
+		{
+			Vec3f v;
+			for (size_t i = 0; i < 3; ++i)
+			{
+				v[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+			}
+			m_normalData.push_back(v);
+		}
 		else if (tokens[0] == "f")
 		{
-			std::vector<int> indices;
+			std::vector<int> positions;
+			std::vector<int> normals;
 
 			for (size_t i = 1; i < tokens.size(); ++i)
 			{
 				int fileIndex = atoi(tokens[i].c_str());
+
 				if (fileIndex < 0)
 				{
-					indices.push_back(((int)m_positionData.size()) + fileIndex);
+					positions.push_back(((int)m_positionData.size()) + fileIndex);
 				}
 				else if (fileIndex > 0)
 				{
-					indices.push_back(fileIndex - 1);
+					positions.push_back(fileIndex - 1);
 				}
 				else
 				{
-					indices.push_back(0);
+					positions.push_back(0);
+				}
+
+				size_t vt = tokens[i].find_first_of("/", 0);
+				size_t vn = std::string::npos;
+
+				if (vt != std::string::npos)
+					vn = tokens[i].find_first_of("/,", vt + 1);
+
+				if (vn != std::string::npos && vn < tokens[i].size() - 1)
+				{
+					int fileIndex = atoi(tokens[i].substr(vn + 1).c_str());
+
+					if (fileIndex < 0)
+					{
+						normals.push_back(((int)m_normalData.size()) + fileIndex);
+					}
+					else if (fileIndex > 0)
+					{
+						normals.push_back(fileIndex - 1);
+					}
+					else
+					{
+						normals.push_back(0);
+					}
 				}
 			}
 
-			for (size_t i = 2; i < indices.size(); ++i)
+			for (size_t i = 2; i < positions.size(); ++i)
 			{
 				Triangle t;
-				t.v1 = indices[0];
-				t.v2 = indices[i - 1];
-				t.v3 = indices[i];
+				t.v1 = positions[0];
+				t.v2 = positions[i - 1];
+				t.v3 = positions[i];
 				m_positions.push_back(t);
+			}
+
+			for (size_t i = 2; i < normals.size(); ++i)
+			{
+				Triangle t;
+				t.v1 = normals[0];
+				t.v2 = normals[i - 1];
+				t.v3 = normals[i];
+				m_normals.push_back(t);
 			}
 		}
 	}
@@ -198,13 +243,16 @@ Vec3f calculateNormal(const Vec3f& V1, const Vec3f& V2, const Vec3f& V3)
 {
 	Vec3f V1V2 = V2 - V1;
 	Vec3f V1V3 = V3 - V1;
-	Vec3f N = Vec3f::cross(V1V3, V1V2);
+	Vec3f N = Vec3f::cross(V1V2, V1V3);
 	N.normalise();
 	return N;
 }
 
 void Mesh::computeNormals()
 {
+	if (m_normals.size() == m_positions.size())
+		return;
+
 	std::vector<Vec3f> faceNormals;
 	for (const auto& tri : m_positions)
 	{
@@ -225,23 +273,16 @@ void Mesh::computeNormals()
 	{
 		N.normalise();
 	}
+
+	m_normals = m_positions;
 }
 
 void Mesh::shade(const Vec3f& P, const Vec3f& N, unsigned primId, float u, float v, Vec3f& colour) const
 {
-	const Triangle& tri = m_positions[primId];
+	const Triangle& tri = m_normals[primId];
 	Vec3f CN = m_normalData[tri.v1];
 	CN.scale(1 - u - v);
 	CN.scaleAdd(m_normalData[tri.v2], u);
 	CN.scaleAdd(m_normalData[tri.v3], v);
-	
-	// Vec3f L = lightP - hitP;
-	// L.normalise();
-	// float nDotL = -Vec3f::dot(N, L);
-	// uint8_t l = 0;
-	// if (compareFloats(nDotL, 0.0f) > 0)
-	//	l = static_cast<uint8_t>(nDotL * 255.0f);
-	// target.setPixel(x, y, Colour(l, l, l));
-	colour = CN + Vec3f::One;
-	colour.scale(0.5f);
+	m_default.shade(P, CN, primId, u, v, colour);
 }

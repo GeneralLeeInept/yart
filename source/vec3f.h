@@ -41,3 +41,4 @@ public:
 
 Vec3f operator-(const Vec3f& a, const Vec3f& b);
 Vec3f operator+(const Vec3f& a, const Vec3f& b);
+Vec3f operator*(const Vec3f& a, const Vec3f& b);

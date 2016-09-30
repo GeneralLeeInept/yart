@@ -13,15 +13,15 @@ int main(int argc, char* argv)
 	Renderer renderer;
 
 	Mesh* mesh = new Mesh(renderer);
-	//	mesh->loadObj("C:/Development/raytracer/data/crytek-sponza/sponza.obj");
-	//	mesh->loadObj("C:/Development/raytracer/data/teapot/teapot.obj");
+	mesh->loadObj("C:/Development/raytracer/data/crytek-sponza/sponza.obj");
+	// mesh->loadObj("C:/Development/raytracer/data/teapot/teapot.obj");
 	//	mesh->loadObj("C:/Development/raytracer/data/buddha/buddha.obj");
 	//	mesh->loadObj("C:/Development/raytracer/data/dragon/dragon.obj");
 	//	mesh->loadPly("C:/Development/raytracer/data/armadillo.ply");
 	//	mesh->loadPly("C:/Development/raytracer/data/dragon.ply");
 	//	mesh->loadPly("C:/Development/raytracer/data/happy.ply");
 	//	mesh->loadObj("C:/Devel/derek.burnheim/raytracer/data/crytek-sponza/sponza.obj");
-	mesh->loadObj("C:/Devel/derek.burnheim/raytracer/data/teapot/teapot.obj");
+	//  mesh->loadObj("C:/Devel/derek.burnheim/raytracer/data/teapot/teapot.obj");
 	//	mesh->loadObj("C:/Devel/derek.burnheim/raytracer/data/buddha/buddha.obj");
 	//	mesh->loadObj("C:/Devel/derek.burnheim/raytracer/data/dragon/dragon.obj");
 	//	mesh->loadObj("C:/Devel/derek.burnheim/raytracer/data/crytek-sponza/sponza.obj");
@@ -33,10 +33,11 @@ int main(int argc, char* argv)
 	renderer.addMesh(mesh);
 
 	Camera camera;
-	camera.m_orientation.rotateY(static_cast<float>(M_PI));
-	camera.m_position = camera.m_orientation * Vec3f(0.0f, 25.0f, -100.0f);
+	camera.m_orientation.rotateY(static_cast<float>(M_PI_2));
+	camera.m_orientation.rotateX(static_cast<float>(-M_PI) * 0.0f);
+	camera.m_position = camera.m_orientation * Vec3f(0.0f, 170.0f, 0.0f);
 
-	RenderTarget target(600, 600);
+	RenderTarget target(1280*4, 720*4);
 	renderer.render(camera, target);
 	target.save("test.png");
 

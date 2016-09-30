@@ -109,3 +109,8 @@ Vec3f operator+(const Vec3f& a, const Vec3f& b)
 {
 	return Vec3f(a.x + b.x, a.y + b.y, a.z + b.z);
 }
+
+Vec3f operator*(const Vec3f & a, const Vec3f & b)
+{
+	return Vec3f(a[0] * b[0], a[1] * b[1], a[2] * b[2]);
+}
