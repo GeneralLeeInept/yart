@@ -4,7 +4,7 @@
 
 void Camera::createRay(RTCRay& ray, float u, float v) const
 {
-	Vec3f direction(u, v, 1.0);
+	Vec3f direction(u, v, 2.0);
 	direction.normalise();
 	direction = m_orientation * direction;
 

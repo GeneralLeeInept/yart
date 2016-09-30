@@ -65,11 +65,14 @@ void Renderer::render(const Camera & camera, RenderTarget & target)
 	if (m_needsCommit)
 		commitScene();
 
-	float uscale = 1.0f / static_cast<float>(target.getWidth() - 1);
-	float vscale = 1.0f / static_cast<float>(target.getHeight() - 1);
+	unsigned width = target.getWidth();
+	unsigned height = target.getHeight();
+	float xscale = 1.0f / static_cast<float>(width - 1);
+	float yscale = 1.0f / static_cast<float>(height - 1);
+	float uscale = (width > height) ? (static_cast<float>(width) / static_cast<float>(height)) : 1.0f;
+	float vscale = (height > width) ? (static_cast<float>(height) / static_cast<float>(width)) : 1.0f;
 
 	std::cout.precision(0);
-
 	std::cout << "Rendering.. 0%" << std::flush;
 
 	float progress = 0.0f;
@@ -85,10 +88,10 @@ void Renderer::render(const Camera & camera, RenderTarget & target)
 		for (unsigned x = 0; x < target.getWidth(); ++x)
 		{
 			float fx = static_cast<float>(x) + 0.5f;
-			float u = 2.0f * (fx * uscale) - 1.0f;
-			float v = 1.0f - 2.0f * (fy * vscale);
+			float u = 2.0f * (fx * xscale) - 1.0f;
+			float v = 1.0f - 2.0f * (fy * yscale);
 			RTCRay ray;
-			camera.createRay(ray, u, v);
+			camera.createRay(ray, u * uscale, v * vscale);
 			rtcIntersect(m_scene, ray);
 			if (ray.geomID != RTC_INVALID_GEOMETRY_ID)
 			{
