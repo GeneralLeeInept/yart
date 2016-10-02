@@ -240,4 +240,14 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
-/data
+
+
+# Test data
+*.obj
+*.ply
+*.png
+*.mtl
+*.jpg
+/data/teapot/copyright.txt
+/data/crytek-sponza/copyright.txt
+/data/crytek-sponza/sponza.ArticulatedModel.Any

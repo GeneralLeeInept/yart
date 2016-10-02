@@ -1,0 +1,28 @@
+# sponza test scene for yart
+
+mesh
+{
+	obj "crytek-sponza/sponza.obj"
+	rot 0 90 0
+}
+
+directionallight
+{
+	pos	0 15000 0
+	falloff none
+	colour 1 1 0.7
+	intensity 1
+}
+
+pointlight
+{
+	pos 100 170 0
+	falloff inverse-square
+	colour 0 0.8 0
+	intensity 5
+}
+
+camera
+{
+	pos 0 180 500
+}
