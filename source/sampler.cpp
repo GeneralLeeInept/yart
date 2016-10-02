@@ -1,6 +1,7 @@
 #include "sampler.h"
 
 #include "math.h"
+#include "raydifferentials.h"
 #include "texture.h"
 
 void Sampler::bind(const TexturePtr& texture)
@@ -8,12 +9,13 @@ void Sampler::bind(const TexturePtr& texture)
 	m_texture = texture;
 }
 
-Vec3f Sampler::operator()(const Vec3f& texcoord) const
+Vec3f Sampler::operator()(const Vec3f& texcoord, const RayDifferentials& rd) const
 {
 	if (m_texture)
 	{
 		Vec3f wrapped = wrap(texcoord);
-		return m_texture->at(wrapped.x, wrapped.y);
+		unsigned lod = 1;
+		return m_texture->at(wrapped.x, wrapped.y, lod);
 	}
 	else
 	{

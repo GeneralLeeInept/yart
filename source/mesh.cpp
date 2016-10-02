@@ -1,8 +1,10 @@
 #include "mesh.h"
 
+#include "raydifferentials.h"
 #include "renderer.h"
 #include <cinttypes>
 #include <embree2/rtcore.h>
+#include <embree2/rtcore_ray.h>
 #include <fstream>
 #include <regex>
 #include <sstream>
@@ -391,24 +393,28 @@ void Mesh::computeNormals()
 	m_normals = m_positions;
 }
 
-void Mesh::shade(const Vec3f& P, const Vec3f& N, unsigned primId, float u, float v, Vec3f& colour) const
+void Mesh::shade(const Vec3f& P, const Vec3f& N, const RTCRay& ray, Vec3f& colour, RayDifferentials& rd) const
 {
-	Triangle tri = m_normals[primId];
+	Triangle tri = m_normals[ray.primID];
 	Vec3f CN = m_normalData[tri.v1];
-	CN.scale(1 - u - v);
-	CN.scaleAdd(m_normalData[tri.v2], u);
-	CN.scaleAdd(m_normalData[tri.v3], v);
+	CN.scale(1 - ray.u - ray.v);
+	CN.scaleAdd(m_normalData[tri.v2], ray.u);
+	CN.scaleAdd(m_normalData[tri.v3], ray.v);
 
-	Vec3f ST(u, v, 0.0f);
+	Vec3f ST(ray.u, ray.v, 0.0f);
 
 	if (m_texcoords.size() > 0)
 	{
-		tri = m_texcoords[primId];
+		tri = m_texcoords[ray.primID];
 		ST = m_texcoordData[tri.v1];
-		ST.scale(1 - u - v);
-		ST.scaleAdd(m_texcoordData[tri.v2], u);
-		ST.scaleAdd(m_texcoordData[tri.v3], v);
+		ST.scale(1 - ray.u - ray.v);
+		ST.scaleAdd(m_texcoordData[tri.v2], ray.u);
+		ST.scaleAdd(m_texcoordData[tri.v3], ray.v);
 	}
 
-	m_materials[primId]->shade(P, CN, ST, u, v, colour);
+	Vec3f V(ray.dir);
+
+	rd.transfer(V, CN, ray.tfar);
+
+	m_materials[ray.primID]->shade(-V, P, CN, ST, ray.u, ray.v, colour, rd);
 }

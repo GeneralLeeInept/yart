@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vec3f.h"
+#include <vector>
 
 struct FIBITMAP;
 
@@ -10,8 +11,10 @@ public:
 	Texture(FIBITMAP* bitmap);
 	~Texture();
 
-	Vec3f at(float u, float v) const;
+	Vec3f at(float u, float v, unsigned lod) const;
 
 private:
-	FIBITMAP* m_bitmap;
+	std::vector<FIBITMAP*> m_mips;
+
+	void buildMipChain(FIBITMAP* mip0);
 };

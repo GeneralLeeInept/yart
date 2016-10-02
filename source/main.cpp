@@ -37,7 +37,7 @@ int main(int argc, char* argv)
 	camera.m_orientation.rotateX(static_cast<float>(M_PI) * 0.125f);
 	camera.m_position = camera.m_orientation * Vec3f(0.0f, 420.0f, -800.0f);
 
-	RenderTarget target(1280 * 4, 720 * 4);
+	RenderTarget target(640, 480);
 	renderer.render(camera, target);
 	target.save("test.png");
 

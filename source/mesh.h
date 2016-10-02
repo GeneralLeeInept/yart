@@ -19,7 +19,7 @@ public:
 
 	void computeNormals();
 
-	void shade(const Vec3f& P, const Vec3f& N, unsigned primId, float u, float v, Vec3f& colour) const;
+	void shade(const Vec3f& P, const Vec3f& N, const RTCRay& ray, Vec3f& colour, RayDifferentials& rd) const;
 
 	struct Triangle
 	{

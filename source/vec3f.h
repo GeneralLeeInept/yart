@@ -12,7 +12,7 @@ public:
 	Vec3f();
 	Vec3f(float f);
 	Vec3f(float x, float y, float z);
-	Vec3f(float* v);
+	Vec3f(const float* v);
 
 	float lengthSq() const;
 	float length() const;
@@ -24,6 +24,7 @@ public:
 	void normalise();
 	void scale(float s);
 	void scaleAdd(const Vec3f& r, float s);
+	void negate();
 
 	static float dot(const Vec3f& a, const Vec3f& b);
 	static Vec3f cross(const Vec3f& a, const Vec3f& b);
@@ -40,5 +41,6 @@ public:
 };
 
 Vec3f operator-(const Vec3f& a, const Vec3f& b);
+Vec3f operator-(const Vec3f& a);
 Vec3f operator+(const Vec3f& a, const Vec3f& b);
 Vec3f operator*(const Vec3f& a, const Vec3f& b);

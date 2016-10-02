@@ -9,7 +9,7 @@ Vec3f Vec3f::Zero(0.0, 0.0, 0.0);
 Vec3f Vec3f::One(1.0, 1.0, 1.0);
 
 Vec3f::Vec3f()
-	: Vec3f(Zero)
+  : Vec3f(Zero)
 {
 }
 
@@ -25,8 +25,10 @@ Vec3f::Vec3f(float x, float y, float z)
 {
 }
 
-Vec3f::Vec3f(float * v)
-	: x(v[0]), y(v[1]), z(v[2])
+Vec3f::Vec3f(const float* v)
+  : x(v[0])
+  , y(v[1])
+  , z(v[2])
 {
 }
 
@@ -82,6 +84,12 @@ void Vec3f::scaleAdd(const Vec3f& r, float s)
 	*this = *this + rs;
 }
 
+void Vec3f::negate()
+{
+	for (size_t i = 0; i < 3; ++i)
+		v[i] = -v[i];
+}
+
 float Vec3f::dot(const Vec3f& a, const Vec3f& b)
 {
 	float dp = 0.f;
@@ -105,12 +113,17 @@ Vec3f operator-(const Vec3f& a, const Vec3f& b)
 	return Vec3f(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
+Vec3f operator-(const Vec3f& a)
+{
+	return Vec3f(-a.x, -a.y, -a.z);
+}
+
 Vec3f operator+(const Vec3f& a, const Vec3f& b)
 {
 	return Vec3f(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
-Vec3f operator*(const Vec3f & a, const Vec3f & b)
+Vec3f operator*(const Vec3f& a, const Vec3f& b)
 {
 	return Vec3f(a[0] * b[0], a[1] * b[1], a[2] * b[2]);
 }

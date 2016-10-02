@@ -3,10 +3,11 @@
 #include "camera.h"
 #include "colour.h"
 #include "mesh.h"
+#include "raydifferentials.h"
 #include "rendertarget.h"
+#include <chrono>
 #include <embree2/rtcore.h>
 #include <embree2/rtcore_ray.h>
-#include <chrono>
 #include <iostream>
 
 Renderer::Renderer()
@@ -60,12 +61,12 @@ void Renderer::commitScene()
 	m_needsCommit = false;
 }
 
-TexturePtr Renderer::loadTexture(const std::string & filename)
+TexturePtr Renderer::loadTexture(const std::string& filename)
 {
 	return m_textureManager.load(filename);
 }
 
-void Renderer::render(const Camera & camera, RenderTarget & target)
+void Renderer::render(const Camera& camera, RenderTarget& target)
 {
 	if (m_needsCommit)
 		commitScene();
@@ -100,12 +101,14 @@ void Renderer::render(const Camera & camera, RenderTarget & target)
 			rtcIntersect(m_scene, ray);
 			if (ray.geomID != RTC_INVALID_GEOMETRY_ID)
 			{
+				RayDifferentials rd(camera.m_orientation.X, camera.m_orientation.Y, camera.m_orientation.Z,
+				                    Vec3f(uscale, vscale, 1.0f));
 				Vec3f N(ray.Ng);
 				N.normalise();
 				Vec3f hitP(ray.org);
 				hitP.scaleAdd(Vec3f(ray.dir), ray.tfar);
 				Vec3f cf;
-				m_geometry[ray.geomID]->shade(hitP, N, ray.primID, ray.u, ray.v, cf);
+				m_geometry[ray.geomID]->shade(hitP, N, ray, cf, rd);
 				target.setPixel(x, y, Colour(cf));
 			}
 			else
