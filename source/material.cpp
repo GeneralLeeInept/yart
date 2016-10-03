@@ -6,6 +6,11 @@
 #include <algorithm>
 #include <embree2/rtcore_ray.h>
 
+Material::Material()
+  : map_Kd(nullptr)
+{
+}
+
 Vec3f Material::shade(const Vec3f& V, const Vec3f& P, const Vec3f& N, const RTCRay& ray, const Light& light,
                       const Vec3f& ST, RayDifferentials& rd) const
 {

@@ -19,6 +19,8 @@ public:
 
 	Texture* map_Kd;
 
+	Material();
+
 	Vec3f shade(const Vec3f& V, const Vec3f& P, const Vec3f& N, const RTCRay& ray, const Light& light,
 	           const Vec3f& ST, RayDifferentials& rd) const;
 };

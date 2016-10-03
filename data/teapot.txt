@@ -1,0 +1,39 @@
+# yart test scene
+
+mesh teapot/teapot.obj
+
+# directionallight
+# {
+#	direction 0.2 -1 0.2
+#	colour 0.8 0.8 0.4
+# }
+
+pointlight
+{
+	pos -100 100 -100
+	falloff inverse-square
+	colour 1 0 0
+	intensity 500
+}
+
+pointlight
+{
+	pos 100 100 -100
+	falloff inverse-square
+	colour 0 1 0
+	intensity 500
+}
+
+pointlight
+{
+	pos 0 300 -100
+	falloff inverse-square
+	colour 0 0 1
+	intensity 500
+}
+
+camera
+{
+	pos 0 100 -300
+	rot 0.2618 0 0
+}

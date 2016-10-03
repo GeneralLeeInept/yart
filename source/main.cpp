@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 	MeshCache meshCache;
 	std::unique_ptr<Scene> scene = std::unique_ptr<Scene>(Scene::load(path, meshCache, textureCache));
 	renderer.setScene(scene.get());
-	RenderTarget target(640, 480);
+	RenderTarget target(640 * 4, 480 * 4);
 	renderer.render(target);
 
 	path.changeExtension(".png");
