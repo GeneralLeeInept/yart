@@ -2,6 +2,7 @@
 
 #include "raydifferentials.h"
 #include "renderer.h"
+#include "texturecache.h"
 #include <cinttypes>
 #include <embree2/rtcore.h>
 #include <embree2/rtcore_ray.h>
@@ -9,7 +10,7 @@
 #include <regex>
 #include <sstream>
 
-void tokenize(const std::string& line, const char* control, std::vector<std::string>& tokens)
+static void tokenize(const std::string& line, const char* control, std::vector<std::string>& tokens)
 {
 	size_t pos = line.find_first_not_of(control, 0);
 
@@ -31,13 +32,12 @@ std::string getDirectory(const std::string& filename)
 	return std::string();
 }
 
-Mesh::Mesh(Renderer& renderer)
-  : SceneObject(renderer)
+Mesh::Mesh()
 {
 	m_defaultMaterial.Kd = Vec3f(0.5880f, 0.5880f, 0.5880f);
 }
 
-bool Mesh::loadMtlLib(const std::string& filename)
+bool Mesh::loadMtlLib(const std::string& filename, TextureCache& textureCache)
 {
 	std::ifstream objFile(filename);
 	std::string path = getDirectory(filename);
@@ -84,14 +84,14 @@ bool Mesh::loadMtlLib(const std::string& filename)
 		}
 		else if (tokens[0] == "map_Kd")
 		{
-			mtl->map_Kd = m_renderer.loadTexture(path + tokens[1]);
+			mtl->map_Kd = textureCache.get(path + tokens[1]);
 		}
 	}
 
 	return true;
 }
 
-bool Mesh::loadObj(const std::string& filename)
+bool Mesh::loadObj(const std::string& filename, TextureCache& textureCache)
 {
 	std::ifstream objFile(filename);
 	std::string path = getDirectory(filename);
@@ -108,7 +108,7 @@ bool Mesh::loadObj(const std::string& filename)
 
 		if (tokens[0] == "mtllib")
 		{
-			loadMtlLib(path + tokens[1]);
+			loadMtlLib(path + tokens[1], textureCache);
 		}
 		else if (tokens[0] == "usemtl")
 		{
@@ -240,6 +240,8 @@ bool Mesh::loadObj(const std::string& filename)
 		}
 	}
 
+	computeNormals();
+
 	return true;
 }
 
@@ -351,6 +353,8 @@ bool Mesh::loadPly(const std::string& filename)
 			}
 		}
 	}
+
+	computeNormals();
 
 	return true;
 }

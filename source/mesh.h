@@ -8,13 +8,15 @@
 #include <unordered_map>
 #include <vector>
 
+class TextureCache;
+
 class Mesh : public SceneObject
 {
 public:
-	Mesh(Renderer& renderer);
+	Mesh();
 
-	bool loadMtlLib(const std::string& filename);
-	bool loadObj(const std::string& filename);
+	bool loadMtlLib(const std::string& filename, TextureCache& textureCache);
+	bool loadObj(const std::string& filename, TextureCache& textureCache);
 	bool loadPly(const std::string& filename);
 
 	void computeNormals();

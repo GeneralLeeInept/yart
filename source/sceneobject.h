@@ -7,8 +7,5 @@ class Renderer;
 class SceneObject : public IShadable
 {
 public:
-	SceneObject(Renderer& renderer);
-
-protected:
-	Renderer& m_renderer;
+	virtual ~SceneObject() = default;
 };

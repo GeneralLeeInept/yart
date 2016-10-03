@@ -4,7 +4,7 @@
 #include "raydifferentials.h"
 #include "texture.h"
 
-void Sampler::bind(const TexturePtr& texture)
+void Sampler::bind(Texture* texture)
 {
 	m_texture = texture;
 }

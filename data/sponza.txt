@@ -1,15 +1,10 @@
 # sponza test scene for yart
 
-mesh
-{
-	obj "crytek-sponza/sponza.obj"
-	rot 0 90 0
-}
+mesh crytek-sponza/sponza.obj
 
 directionallight
 {
-	pos	0 15000 0
-	falloff none
+	direction 0 -1 0
 	colour 1 1 0.7
 	intensity 1
 }
@@ -24,5 +19,6 @@ pointlight
 
 camera
 {
-	pos 0 180 500
+	pos 800 180 0
+	rot 0 1.5707963267948966192313216916398 0
 }
