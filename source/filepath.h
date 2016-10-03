@@ -10,6 +10,8 @@ public:
 	operator const char*() const;
 	operator const std::string&() const;
 
+	void changeExtension(const std::string& extension);
+
 	std::string directory() const;
 	std::string extension() const;
 

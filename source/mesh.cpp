@@ -397,7 +397,8 @@ void Mesh::computeNormals()
 	m_normals = m_positions;
 }
 
-void Mesh::shade(const Vec3f& P, const Vec3f& N, const RTCRay& ray, Vec3f& colour, RayDifferentials& rd) const
+Vec3f Mesh::shade(const Vec3f& P, const Vec3f& N, const RTCRay& ray, const Light& light,
+                  RayDifferentials& rd) const
 {
 	Triangle tri = m_normals[ray.primID];
 	Vec3f CN = m_normalData[tri.v1];
@@ -420,5 +421,5 @@ void Mesh::shade(const Vec3f& P, const Vec3f& N, const RTCRay& ray, Vec3f& colou
 
 	rd.transfer(V, CN, ray.tfar);
 
-	m_materials[ray.primID]->shade(-V, P, CN, ST, ray.u, ray.v, colour, rd);
+	return m_materials[ray.primID]->shade(-V, P, CN, ray, light, ST, rd);
 }

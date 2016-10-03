@@ -14,6 +14,8 @@ public:
 	Vec3f(float x, float y, float z);
 	Vec3f(const float* v);
 
+	Vec3f& operator+=(Vec3f b);
+
 	float lengthSq() const;
 	float length() const;
 	const float& operator[](size_t index) const;

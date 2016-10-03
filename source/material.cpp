@@ -1,32 +1,32 @@
 #include "material.h"
 
+#include "light.h"
 #include "sampler.h"
 #include "texture.h"
 #include <algorithm>
+#include <embree2/rtcore_ray.h>
 
-void Material::shade(const Vec3f& V, const Vec3f& P, const Vec3f& N, const Vec3f& ST, float u, float v,
-                     Vec3f& colour, RayDifferentials& rd) const
+Vec3f Material::shade(const Vec3f& V, const Vec3f& P, const Vec3f& N, const RTCRay& ray, const Light& light,
+                      const Vec3f& ST, RayDifferentials& rd) const
 {
-	Vec3f diffuse;
+	Vec3f Cd;
 
 	if (map_Kd)
 	{
 		Sampler sampler;
 		sampler.bind(map_Kd);
-		diffuse = sampler(ST, rd);
+		Cd = sampler(ST, rd);
 	}
 	else
 	{
-		diffuse = Kd;
+		Cd = Kd;
 	}
 
-	Vec3f L(1.0f, 5.0f, -1.0f);
-	L.normalise();
-
+	Vec3f L = light.L(P);
 	Vec3f H = V + L;
 	H.normalise();
 
-	colour = /*KaIa +*/
-	  diffuse * std::min(1.0f, std::max(0.0f, Vec3f::dot(N, L))) //{ SUM j = 1..ls, (N*Lj)Ij }
-	  + Ks * std::pow(std::min(1.0f, std::max(0.0f, Vec3f::dot(N, H))), Ns); //{ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij }
+	float Sd = std::min(1.0f, std::max(0.0f, Vec3f::dot(N, L))) * light.intensity(P);
+	float Ss = std::pow(std::min(1.0f, std::max(0.0f, Vec3f::dot(N, H))), Ns) * light.intensity(P);
+	return Cd * (light.m_colour * Sd) + Ks * (light.m_colour * Ss);
 }

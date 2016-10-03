@@ -17,6 +17,11 @@ FilePath::operator const std::string&() const
 	return m_path;
 }
 
+void FilePath::changeExtension(const std::string& extension)
+{
+	m_path.replace(m_path.find_last_of('.'), std::string::npos, extension);
+}
+
 std::string FilePath::directory() const
 {
 	size_t dirpart = m_path.find_last_of("/", std::string::npos);

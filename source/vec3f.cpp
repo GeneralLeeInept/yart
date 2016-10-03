@@ -32,6 +32,12 @@ Vec3f::Vec3f(const float* v)
 {
 }
 
+Vec3f& Vec3f::operator+=(Vec3f b)
+{
+	*this = *this + b;
+	return *this;
+}
+
 float Vec3f::lengthSq() const
 {
 	return dot(*this, *this);

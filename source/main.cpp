@@ -1,5 +1,6 @@
 #include "camera.h"
 #include "colour.h"
+#include "filepath.h"
 #include "math.h"
 #include "mesh.h"
 #include "meshcache.h"
@@ -13,14 +14,17 @@ int main(int argc, char** argv)
 {
 	FreeImage_Initialise();
 
+	FilePath path(argv[1]);
 	Renderer renderer;
 	TextureCache textureCache;
 	MeshCache meshCache;
-	std::unique_ptr<Scene> scene = std::unique_ptr<Scene>(Scene::load(argv[1], meshCache, textureCache));
+	std::unique_ptr<Scene> scene = std::unique_ptr<Scene>(Scene::load(path, meshCache, textureCache));
 	renderer.setScene(scene.get());
 	RenderTarget target(640, 480);
 	renderer.render(target);
-	target.save("test.png");
+
+	path.changeExtension(".png");
+	target.save(path);
 
 	FreeImage_DeInitialise();
 

@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
+class Light;
 class TextureCache;
 
 class Mesh : public SceneObject
@@ -21,7 +22,7 @@ public:
 
 	void computeNormals();
 
-	void shade(const Vec3f& P, const Vec3f& N, const RTCRay& ray, Vec3f& colour, RayDifferentials& rd) const;
+	Vec3f shade(const Vec3f& P, const Vec3f& N, const RTCRay& ray, const Light& light, RayDifferentials& rd) const;
 
 	struct Triangle
 	{

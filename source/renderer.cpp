@@ -112,7 +112,8 @@ void Renderer::render(RenderTarget& target)
 				Vec3f hitP(ray.org);
 				hitP.scaleAdd(Vec3f(ray.dir), ray.tfar);
 				Vec3f cf;
-				m_geometry[ray.geomID]->shade(hitP, N, ray, cf, rd);
+				for (auto& light : m_scene->m_lights)
+					cf += m_geometry[ray.geomID]->shade(hitP, N, ray, *(light.get()), rd);
 				target.setPixel(x, y, Colour(cf));
 			}
 			else

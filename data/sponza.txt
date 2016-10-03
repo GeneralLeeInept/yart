@@ -2,23 +2,38 @@
 
 mesh crytek-sponza/sponza.obj
 
-directionallight
+# directionallight
+# {
+#	direction 0.2 -1 0.2
+#	colour 0.8 0.8 0.4
+# }
+
+pointlight
 {
-	direction 0 -1 0
-	colour 1 1 0.7
-	intensity 1
+	pos -450 10 50
+	falloff inverse-square
+	colour 1 0 0
+	intensity 1000
 }
 
 pointlight
 {
-	pos 100 170 0
+	pos -450 10 -50
 	falloff inverse-square
-	colour 0 0.8 0
-	intensity 5
+	colour 0 1 0
+	intensity 1000
+}
+
+pointlight
+{
+	pos -350 10 0
+	falloff inverse-square
+	colour 0 0 1
+	intensity 1000
 }
 
 camera
 {
-	pos 800 180 0
+	pos 800 480 0
 	rot 0 1.5707963267948966192313216916398 0
 }

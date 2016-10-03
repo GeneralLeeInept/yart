@@ -1,8 +1,10 @@
 #include "scene.h"
 
+#include "directionallight.h"
 #include "filepath.h"
 #include "mesh.h"
 #include "meshcache.h"
+#include "pointlight.h"
 #include <fstream>
 #include <vector>
 
@@ -40,6 +42,8 @@ static void tokenize(const std::string& line, const char* control, std::vector<s
 void processDirectionalLight(std::ifstream& file, Scene* scene)
 {
 	std::string line;
+	DirectionalLight* light = new DirectionalLight();
+
 	while (std::getline(file, line))
 	{
 		std::vector<std::string> tokens;
@@ -51,12 +55,29 @@ void processDirectionalLight(std::ifstream& file, Scene* scene)
 		if (tokens[0] == "}")
 			break;
 
-		// todo etc
+		if (tokens[0] == "direction")
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				light->D[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+			}
+			light->D.normalise();
+		}
+		else  if (tokens[0] == "colour")
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				light->m_colour[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+			}
+		}
 	}
+
+	scene->addLight(light);
 }
 
 void processPointLight(std::ifstream& file, Scene* scene)
 {
+	PointLight* light = new PointLight();
 	std::string line;
 	while (std::getline(file, line))
 	{
@@ -69,8 +90,27 @@ void processPointLight(std::ifstream& file, Scene* scene)
 		if (tokens[0] == "}")
 			break;
 
-		// todo etc
+		if (tokens[0] == "pos")
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				light->P[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+			}
+		}
+		else  if (tokens[0] == "colour")
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				light->m_colour[i] = static_cast<float>(atof(tokens[i + 1].c_str()));
+			}
+		}
+		else if (tokens[0] == "intensity")
+		{
+			light->m_intensity = static_cast<float>(atof(tokens[1].c_str()));
+		}
 	}
+
+	scene->addLight(light);
 }
 
 void processCamera(std::ifstream& file, Scene* scene)
