@@ -9,9 +9,14 @@
 #include "scene.h"
 #include "texturecache.h"
 #include <FreeImage.h>
+#include <xmmintrin.h>
+#include <pmmintrin.h>
 
 int main(int argc, char** argv)
 {
+	_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+	_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+
 	FreeImage_Initialise();
 
 	FilePath path(argv[1]);
@@ -20,7 +25,7 @@ int main(int argc, char** argv)
 	MeshCache meshCache;
 	std::unique_ptr<Scene> scene = std::unique_ptr<Scene>(Scene::load(path, meshCache, textureCache));
 	renderer.setScene(scene.get());
-	RenderTarget target(640 * 4, 480 * 4);
+	RenderTarget target(1280 * 4, 720 * 4);
 	renderer.render(target);
 
 	path.changeExtension(".png");

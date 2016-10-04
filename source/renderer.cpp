@@ -113,7 +113,30 @@ void Renderer::render(RenderTarget& target)
 				hitP.scaleAdd(Vec3f(ray.dir), ray.tfar);
 				Vec3f cf;
 				for (auto& light : m_scene->m_lights)
-					cf += m_geometry[ray.geomID]->shade(hitP, N, ray, *(light.get()), rd);
+				{
+					Vec3f L = light->L(hitP);
+
+					RTCRay shadowRay;
+
+					for (int i = 0; i < 3; ++i)
+					{
+						shadowRay.org[i] = hitP[i];
+						shadowRay.dir[i] = L[i];
+					}
+
+					shadowRay.tnear = 0.01f; // todo: scene option, adaptive?
+					shadowRay.tfar = light->distanceFrom(hitP);// std::numeric_limits<float>::infinity();
+					shadowRay.instID = RTC_INVALID_GEOMETRY_ID;
+					shadowRay.geomID = RTC_INVALID_GEOMETRY_ID;
+					shadowRay.primID = RTC_INVALID_GEOMETRY_ID;
+					shadowRay.mask = 0xffffffff;
+					shadowRay.time = 0.0f;
+
+					rtcOccluded(m_rtcScene, shadowRay);
+
+					if (shadowRay.geomID)
+						cf += m_geometry[ray.geomID]->shade(hitP, N, ray, *(light.get()), rd);
+				}
 				target.setPixel(x, y, Colour(cf));
 			}
 			else
